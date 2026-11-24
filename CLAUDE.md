@@ -11,11 +11,14 @@ Visão geral, Áreas, a aba da gestora (nome configurável; pontos de atenção 
 ## Como o código está organizado
 
 - `TIPOS`: esquema de cada tipo de registro (`area`, `atencao`, `projeto`, `prioridade`, `pessoa`, `avaliacao`, `devponto`,
-  `acaodev`, que é o plano de ação da aba Desenvolvimento, desenhado em `planoAcao()` como tabela que vira cards no celular).
+  `acaodev`, que é o plano de ação da aba Desenvolvimento, desenhado em `planoAcao()` como tabela que vira cards no celular,
+  e `iniciativa`, projeto simples de uma área com título, prazo e descrição, listado dentro do cartão da área).
   A gaveta de edição (`openDrawer`) é gerada a partir dele. Campo novo = uma linha em `campos`.
 - `config`: registro único de ajustes (id fixo `config`, botão Ajustes no topo, sem excluir). Guarda o nome da
   gestora; `G()` devolve esse nome e os rótulos que o citam em `TIPOS` são funções, resolvidas por `tx()`.
   Padrão quando vazio: "Gestora". Nunca escrever o nome real no código.
+- Ordenação por arrasto: `sortable(container, onDrop)` arrasta pelo `.grip` (ponteiro, serve para mouse e toque) e
+  `reordenar(ids)` grava `ordem` sequencial. Edição direto na tabela: `inlineTexto` e `inlineData`.
 - `VIEWS`: uma função por aba, que devolve o DOM da tela. `render()` redesenha tudo a cada mudança.
 - `h(tag, attrs, ...filhos)`: único jeito de criar DOM. Texto do usuário entra sempre como nó de texto, nunca como HTML.
 - Dados: todos os registros ficam numa coleção `itens`, um documento por registro, com o campo `tipo`.

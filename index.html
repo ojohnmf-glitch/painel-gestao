@@ -118,9 +118,9 @@ button.panel-head { border: 0; width: calc(100% + 2 * var(--card-pad)); text-ali
 .stat b { display: block; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
 .stat span { font-size: 13px; color: var(--fog); }
 .stat.crit b { color: var(--crit-text); } .stat.warn b { color: var(--warn-text); }
-.areas-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
-.area-tile { background: var(--fcs); border-radius: 16px; border: 0; text-align: left; padding: 0 0 12px; overflow: hidden; }
-.area-tile .hd { background: var(--fc); color: var(--fct); font-weight: 700; padding: 8px 14px; display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.areas-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); grid-template-rows: auto auto; gap: 12px; }
+.area-tile { background: var(--fcs); border-radius: 16px; border: 0; text-align: left; padding: 0 0 12px; overflow: hidden; display: grid; grid-template-rows: subgrid; grid-row: span 2; row-gap: 0; }
+.area-tile .hd { background: var(--fc); color: var(--fct); font-weight: 700; padding: 8px 14px; display: flex; gap: 8px; align-items: center; font-size: 14px; min-height: 52px; line-height: 1.3; overflow-wrap: anywhere; }
 .area-tile .hd .dot { margin: 0; outline: 2px solid rgba(255,255,255,.7); }
 .area-tile p { padding: 8px 14px 0; font-size: 13px; color: var(--ash); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 @media (max-width: 760px) { .visao { grid-template-columns: 1fr; } .side { position: static; flex-direction: row; flex-wrap: wrap; } .stat { flex: 1 1 140px; } .brand h1 { font-size: 24px; } }
@@ -133,21 +133,31 @@ button.panel-head { border: 0; width: calc(100% + 2 * var(--card-pad)); text-ali
 .person h3 { font-size: 17px; font-weight: 700; }
 .person .role { font-size: 13px; color: var(--fog); }
 
+/* Arrastar para ordenar e edição inline */
+.grip { cursor: grab; color: var(--silver); touch-action: none; user-select: none; -webkit-user-select: none; flex: none; padding: 2px 4px; margin-left: -4px; font-size: 15px; line-height: 1.3; letter-spacing: -2px; border-radius: 4px; }
+.grip:hover { background: var(--mist); color: var(--ink); }
+.dragging { opacity: .45; }
+.inl { border: 1px solid transparent; background: transparent; border-radius: 4px; padding: 0 4px; margin: 0 -4px; font: inherit; font-size: 14px; color: inherit; max-width: 100%; }
+.inl:hover { border-color: var(--hairline); } .inl:focus { outline: 2px solid var(--blue); outline-offset: 0; background: var(--paper); }
+textarea.inl { width: 100%; resize: vertical; min-height: 44px; font-weight: 600; line-height: 1.35; }
+.ini .row { padding: 8px 0; } .ini .row .t { font-weight: 600; }
+.ini-head { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.ini-head .lbl { margin: 0; flex: 1; }
+
 /* Plano de ação */
-.plano-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-.plano-stats .stat { flex: 1 1 140px; }
 .toolbar { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; margin-bottom: 4px; font-size: 13px; color: var(--fog); }
 .toolbar label { display: inline-flex; gap: 6px; align-items: center; }
 .toolbar select { border: 1px solid var(--hairline); border-radius: var(--r-pill); padding: 4px 10px; background: var(--paper); font-size: 13px; }
-.tbl .tr { display: grid; grid-template-columns: minmax(0, 2.4fr) 1fr 1fr 1.1fr .9fr 1fr 32px; gap: 6px 10px; padding: 10px 0; border-top: 1px solid rgba(20,30,40,.09); align-items: start; }
+.tbl .tr { display: grid; grid-template-columns: 18px minmax(0, 2.4fr) 1fr 1fr 1.1fr 1fr 1fr 56px; gap: 6px 10px; padding: 10px 0; border-top: 1px solid rgba(20,30,40,.09); align-items: start; }
 .tbl .tr.th { font-size: 12px; font-weight: 600; color: var(--fog); text-transform: uppercase; letter-spacing: .04em; border-top: 0; padding-bottom: 4px; }
 .tbl .tr.late { box-shadow: inset 3px 0 0 var(--crit); padding-left: 12px; }
-.tbl .tr.feita .t { text-decoration: line-through; color: var(--fog); font-weight: 400; }
+.tbl .tr.feita .t, .tbl .tr.feita textarea.inl { text-decoration: line-through; color: var(--fog); font-weight: 400; }
+.tbl .td.acts { display: flex; gap: 2px; justify-content: flex-end; }
+.tbl .td.grip-cell { padding-top: 1px; }
 .tbl .td { min-width: 0; font-size: 14px; }
 .tbl .td .sub { font-size: 13px; color: var(--fog); margin-top: 2px; overflow-wrap: anywhere; }
-.tbl .td.main .body { display: block; width: 100%; border: 0; background: transparent; text-align: left; padding: 0; }
-.tbl .td.main .body:hover .t { color: var(--primary-deep); }
-.tbl .td.main .t { font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.tbl .td.main .t { display: block; width: 100%; border: 1px solid transparent; border-radius: 4px; padding: 0 4px; margin: 0 -4px; background: transparent; text-align: left; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; cursor: text; }
+.tbl .td.main .t:hover { border-color: var(--hairline); }
 .tbl .td::before { display: none; content: attr(data-l); font-size: 11px; font-weight: 600; color: var(--fog); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
 .sel { appearance: none; -webkit-appearance: none; border: 0; border-radius: 4px; padding: 0 20px 0 8px; font-size: 13px; line-height: 1.5; background: var(--mist) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235f666e' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 6px center; color: var(--ash); max-width: 100%; cursor: pointer; }
 .sel.alta, .sel.travada { background-color: var(--crit-soft); color: var(--crit-text); } .sel.media, .sel.andamento { background-color: var(--warn-soft); color: var(--warn-text); } .sel.baixa, .sel.feita { background-color: var(--ok-soft); color: var(--ok-text); }
@@ -160,8 +170,8 @@ button.panel-head { border: 0; width: calc(100% + 2 * var(--card-pad)); text-ali
   .tbl .tr.th { display: none; }
   .tbl .td.main, .tbl .td.wide { grid-column: 1 / -1; }
   .tbl .td::before { display: block; }
-  .tbl .td.main::before { display: none; }
-  .tbl .td.del { grid-column: 2; justify-self: end; }
+  .tbl .td.main::before, .tbl .td.grip-cell::before, .tbl .td.acts::before { display: none; }
+  .tbl .td.grip-cell { grid-column: 1; justify-self: start; } .tbl .td.acts { grid-column: 2; justify-self: end; }
 }
 
 /* Gaveta */
@@ -244,6 +254,10 @@ const TIPOS = {
     { k: "proximo", l: "Próximo passo", t: "area" },
     { k: "pedido", l: () => "O que preciso da " + G(), t: "area", h: "Decisão, aprovação, destrave ou só ciência." },
     { k: "levar", l: "Levar no próximo 1:1", t: "check", d: true } ] },
+  iniciativa: { nome: "Projeto da área", novo: "Novo projeto da área", titulo: "titulo", campos: [
+    { k: "titulo", l: "Projeto", t: "text" },
+    { k: "area", l: "Área", t: "areaRef" }, { k: "prazo", l: "Prazo", t: "date" },
+    { k: "descricao", l: "Descrição", t: "area" } ] },
   prioridade: { nome: "Prioridade", novo: "Nova prioridade", titulo: "titulo", campos: [
     { k: "titulo", l: "Prioridade", t: "text" },
     { k: "area", l: "Área", t: "areaRef" }, { k: "horizonte", l: "Horizonte", t: "select", o: HORIZ, d: "agora" },
@@ -421,49 +435,82 @@ const prioRow = (p, i, arr) => row(p, { check: "feito", checkLabel: "Marcar como
 async function swap(arr, i, j) { const a = arr[i], b = arr[j]; if (!a || !b) return; const oa = a.ordem || 0, ob = b.ordem || 0;
   await patch(a.id, { ordem: ob === oa ? oa + (j > i ? 1 : -1) : ob }); await patch(b.id, { ordem: oa }); }
 
+/* ---------- Arrastar para ordenar e edição inline ---------- */
+function sortable(container, onDrop) { /* Arrasta pelo .grip; funciona com mouse e toque. Filhos com data-id são as linhas. */
+  container.addEventListener("pointerdown", e => {
+    const grip = e.target.closest(".grip"); if (!grip || e.button) return;
+    const row = grip.closest("[data-id]"); if (!row || row.parentElement !== container) return;
+    e.preventDefault(); row.classList.add("dragging"); const antes = [...container.children].map(c => c.dataset.id).join();
+    /* Os ouvintes ficam no document: mover a linha no DOM solta a captura do ponteiro. */
+    const move = ev => { ev.preventDefault(); const el = document.elementFromPoint(ev.clientX, ev.clientY), over = el && el.closest("[data-id]");
+      if (!over || over === row || over.parentElement !== container) return;
+      const r = over.getBoundingClientRect(); container.insertBefore(row, ev.clientY > r.top + r.height / 2 ? over.nextSibling : over); };
+    const up = () => { document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
+      row.classList.remove("dragging"); const ids = [...container.children].map(c => c.dataset.id).filter(Boolean); if (ids.join() !== antes) onDrop(ids); };
+    document.addEventListener("pointermove", move, { passive: false }); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+  });
+  return container;
+}
+async function reordenar(ids) { for (let i = 0; i < ids.length; i++) { const it = items.get(ids[i]); if (it && it.ordem !== i) await patch(ids[i], { ordem: i }); } }
+const grip = () => h("span", { class: "grip", title: "Arrastar para ordenar", "aria-hidden": "true" }, "⋮⋮");
+function inlineTexto(item, campo, cls) { /* Clique no texto vira caixa de edição; Enter ou sair salva, Esc cancela. */
+  const el = h("button", { class: cls, type: "button", title: "Clique para editar" }, item[campo] || "(sem título)");
+  el.addEventListener("click", () => {
+    let fim = false; const ta = h("textarea", { class: "inl", rows: "2", "aria-label": "Editar texto" }); ta.value = item[campo] || "";
+    const salvar = () => { if (fim) return; fim = true; const v = ta.value.trim(); if (v && v !== (item[campo] || "")) patch(item.id, { [campo]: v }); else ta.replaceWith(el); };
+    ta.addEventListener("blur", salvar); ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); salvar(); } if (e.key === "Escape") { fim = true; ta.replaceWith(el); } });
+    el.replaceWith(ta); ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); });
+  return el;
+}
+const inlineData = (item, campo, label) => h("input", { class: "inl", type: "date", value: item[campo] || "", "aria-label": label, onchange: e => patch(item.id, { [campo]: e.target.value }) });
+
 /* ---------- Plano de ação (aba Desenvolvimento) ---------- */
-const planoUI = { ord: "prazo", gap: "", status: "" };
+const planoUI = { ord: "manual", gap: "", status: "" };
 const vencida = a => a.prazo && a.prazo < today() && a.status !== "feita";
 function selChip(item, campo, opts, label) {
   const s = h("select", { class: "sel " + (item[campo] || ""), "aria-label": label, onchange: e => patch(item.id, { [campo]: e.target.value }) }, opts.map(([v, n]) => h("option", { value: v }, n)));
   s.value = item[campo] || opts[0][0]; return s;
 }
 function planoAcao() {
-  const all = list("acaodev"), feitas = all.filter(a => a.status === "feita"), atrasadas = all.filter(vencida);
+  const all = list("acaodev");
   const rank = { alta: 0, media: 1, baixa: 2 }, byPrazo = (a, b) => (a.prazo || "9999") < (b.prazo || "9999") ? -1 : (a.prazo || "9999") > (b.prazo || "9999") ? 1 : 0;
   let rows = all.filter(a => (!planoUI.gap || a.gap === planoUI.gap) && (!planoUI.status || a.status === planoUI.status));
-  rows.sort(planoUI.ord === "prioridade" ? (a, b) => (rank[a.prioridade] ?? 9) - (rank[b.prioridade] ?? 9) || byPrazo(a, b) : byPrazo);
+  if (planoUI.ord === "prioridade") rows.sort((a, b) => (rank[a.prioridade] ?? 9) - (rank[b.prioridade] ?? 9) || byPrazo(a, b)); else if (planoUI.ord === "prazo") rows.sort(byPrazo);
+  const arrastavel = planoUI.ord === "manual" && !planoUI.gap && !planoUI.status;
   const filtro = (k, label, opts) => h("label", null, label, h("select", { value: planoUI[k], onchange: e => { planoUI[k] = e.target.value; render(); } },
     opts.map(([v, n]) => { const o = h("option", { value: v }, n); if (v === planoUI[k]) o.selected = true; return o; })));
   const td = (l, cls, ...kids) => h("div", { class: "td " + (cls || ""), "data-l": l }, ...kids);
   const linha = a => {
     const semanal = a.cadencia === "semanal", total = Number(a.progTotal) || 0, feito = Number(a.progFeito) || 0;
-    return h("div", { class: "tr" + (vencida(a) ? " late" : "") + (a.status === "feita" ? " feita" : "") },
-      td("Ação", "main", h("button", { class: "body", type: "button", onclick: () => openDrawer("acaodev", a) },
-        h("div", { class: "t" }, a.acao || "(sem título)"),
+    return h("div", { class: "tr" + (vencida(a) ? " late" : "") + (a.status === "feita" ? " feita" : ""), "data-id": a.id },
+      td("", "grip-cell", arrastavel ? grip() : null),
+      td("Ação", "main", inlineTexto(a, "acao", "t"),
         a.criterio && h("div", { class: "sub" }, "Feito quando: " + a.criterio),
-        a.envolvidos && h("div", { class: "sub" }, "Com: " + a.envolvidos))),
+        a.envolvidos && h("div", { class: "sub" }, "Com: " + a.envolvidos)),
       td("Gap", "", h("span", { class: "chip" }, lbl(GAPS, a.gap) || "—")),
       td("Prioridade", "", selChip(a, "prioridade", PRIO, "Prioridade")),
       td("Status", "", selChip(a, "status", STATUS_ACAO, "Status")),
-      td("Prazo", "", h("div", null, a.prazo ? fmtDate(a.prazo) : "—"), vencida(a) && h("div", { class: "late-chip" }, "vencida")),
+      td("Prazo", "", inlineData(a, "prazo", "Prazo"), vencida(a) && h("div", { class: "late-chip" }, "vencida")),
       td("Progresso", "", semanal ? h("div", { class: "prog" }, h("span", { class: "num" }, feito + " de " + total),
         h("button", { class: "mini", type: "button", "aria-label": "Marcar mais uma semana", title: "+1 semana", disabled: total > 0 && feito >= total, onclick: () => patch(a.id, { progFeito: feito + 1 }) }, "+1")) : h("span", { class: "sub" }, "única")),
-      td("", "del", h("button", { class: "mini danger btn", type: "button", "aria-label": "Excluir ação", style: "width:auto;padding:0 6px;font-size:12px", onclick: e => { const b = e.currentTarget;
+      td("", "acts", h("button", { class: "mini", type: "button", "aria-label": "Abrir ação", title: "Editar todos os campos", onclick: () => openDrawer("acaodev", a) }, "✎"),
+        h("button", { class: "mini danger btn", type: "button", "aria-label": "Excluir ação", style: "width:auto;padding:0 6px;font-size:12px", onclick: e => { const b = e.currentTarget;
         if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "Confirmar"; b.setAttribute("aria-label", "Confirmar exclusão"); return; } del(a.id).catch(() => {}); } }, "×")));
   };
-  return block("Plano de ação", "Ações ligadas à avaliação de desempenho. Clique na ação para editar; status e prioridade mudam direto na tabela.", "acaodev",
-    h("div", { class: "plano-stats" },
-      h("div", { class: "stat" }, h("b", { class: "num" }, all.length), h("span", null, all.length === 1 ? "ação" : "ações")),
-      h("div", { class: "stat" }, h("b", { class: "num" }, feitas.length), h("span", null, "feitas")),
-      h("div", { class: "stat" + (atrasadas.length ? " crit" : "") }, h("b", { class: "num" }, atrasadas.length), h("span", null, "atrasadas"))),
+  return block("Plano de ação", "Ações ligadas à avaliação de desempenho. Texto, prazo, status e prioridade editam direto na tabela; o lápis abre todos os campos. Arraste pelo ⋮⋮ para ordenar.", "acaodev",
     h("div", { class: "panel plain" },
-      h("div", { class: "toolbar" }, filtro("ord", "Ordenar por", [["prazo", "Prazo"], ["prioridade", "Prioridade"]]),
+      h("div", { class: "toolbar" }, filtro("ord", "Ordenar por", [["manual", "Minha ordem"], ["prazo", "Prazo"], ["prioridade", "Prioridade"]]),
         filtro("gap", "Gap", [["", "Todos"], ...GAPS]), filtro("status", "Status", [["", "Todos"], ...STATUS_ACAO])),
-      rows.length ? h("div", { class: "tbl" },
-        h("div", { class: "tr th" }, ...["Ação", "Gap", "Prioridade", "Status", "Prazo", "Progresso", ""].map(t => h("div", { class: "td" }, t))),
-        rows.map(linha)) : h("p", { class: "empty" }, all.length ? "Nenhuma ação com esses filtros." : "Nenhuma ação ainda. Use Adicionar para criar a primeira.")));
+      rows.length ? sortable(h("div", { class: "tbl" },
+        h("div", { class: "tr th" }, ...["", "Ação", "Gap", "Prioridade", "Status", "Prazo", "Progresso", ""].map(t => h("div", { class: "td" }, t))),
+        rows.map(linha)), reordenar) : h("p", { class: "empty" }, all.length ? "Nenhuma ação com esses filtros." : "Nenhuma ação ainda. Use Adicionar para criar a primeira.")));
 }
+
+const iniRow = p => { const venc = p.prazo && p.prazo < today();
+  return h("div", { class: "row", "data-id": p.id }, grip(),
+    h("button", { class: "body", type: "button", onclick: () => openDrawer("iniciativa", p) }, h("div", { class: "t" }, p.titulo || "(sem título)"),
+      h("div", { class: "meta" }, p.prazo && h("span", { class: "chip" + (venc ? " critico" : "") }, (venc ? "venceu em " : "até ") + fmtDate(p.prazo))),
+      p.descricao && h("div", { class: "txt" }, p.descricao))); };
 
 /* ---------- Telas ---------- */
 const VIEWS = {
@@ -486,12 +533,15 @@ const VIEWS = {
     const areas = list("area");
     return block("Visão por área", "Leitura do momento, destaques e riscos de cada área, com os projetos, pontos da " + G() + " e prioridades ligados a ela.", "area",
       areas.length ? h("div", { class: "grid" }, areas.map(a => {
-        const pr = list("projeto").filter(p => p.area === a.id), at = list("atencao").filter(x => x.area === a.id && !x.resolvido), pri = list("prioridade").filter(x => x.area === a.id && !x.feito);
+        const pr = list("projeto").filter(p => p.area === a.id), at = list("atencao").filter(x => x.area === a.id && !x.resolvido), pri = list("prioridade").filter(x => x.area === a.id && !x.feito), ini = list("iniciativa").filter(x => x.area === a.id);
         return h("div", { class: "panel c-" + (a.cor || "gray") },
           h("button", { class: "panel-head", type: "button", onclick: () => openDrawer("area", a) }, h("span", { class: "dot " + (a.saude || "") }), a.nome, h("span", { class: "cnt" }, lbl(SAUDE, a.saude) + " · editar")),
           kv([["Leitura do momento", a.resumo], ["Destaques", a.destaques], ["Riscos e pendências", a.riscos]]),
           !(a.resumo || a.destaques || a.riscos) && h("p", { class: "empty" }, "Clique na faixa para registrar a leitura da área."),
-          pr.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Projetos (" + pr.length + ")") : null, ...pr.map(p => projRow(p)),
+          h("div", { class: "ini-head" }, h("div", { class: "lbl" }, "Projetos da área" + (ini.length ? " (" + ini.length + ")" : "")),
+            h("button", { class: "btn small", type: "button", onclick: () => openDrawer("iniciativa", null, { area: a.id }) }, "Adicionar projeto")),
+          ini.length ? sortable(h("div", { class: "ini" }, ini.map(iniRow)), reordenar) : h("p", { class: "empty", style: "padding:4px 0" }, "Nenhum projeto ainda."),
+          pr.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Projetos para o 1:1 (" + pr.length + ")") : null, ...pr.map(p => projRow(p)),
           at.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Pontos da " + G() + " (" + at.length + ")") : null, ...at.map(x => atRow(x)),
           pri.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Prioridades (" + pri.length + ")") : null, ...pri.map(x => prioRow(x)));
       })) : h("p", { class: "empty" }, "Nenhuma área cadastrada ainda."));
@@ -557,10 +607,10 @@ function go(k) { tab = VIEWS[k] ? k : "visao"; try { if (location.hash !== "#" +
 window.addEventListener("hashchange", () => { const k = location.hash.slice(1); if (VIEWS[k] && k !== tab) { tab = k; render(); } });
 
 /* ---------- Gaveta de edição ---------- */
-function openDrawer(tipo, item) {
+function openDrawer(tipo, item, preset) {
   const T = TIPOS[tipo], isNew = !item, host = $("drawerHost"), last = document.activeElement;
   const draft = item ? JSON.parse(JSON.stringify(item)) : { id: T.idFixo || "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), tipo, ordem: Date.now() };
-  if (isNew) T.campos.forEach(c => { if (c.d !== undefined) draft[c.k] = c.d; if (c.t === "date" && c.k === "data") draft[c.k] = today(); });
+  if (isNew) { T.campos.forEach(c => { if (c.d !== undefined) draft[c.k] = c.d; if (c.t === "date" && c.k === "data") draft[c.k] = today(); }); Object.assign(draft, preset || {}); }
   const close = () => { host.replaceChildren(); document.removeEventListener("keydown", onKey); if (last && last.focus) last.focus(); };
   const onKey = e => { if (e.key === "Escape") close(); };
   const fields = T.campos.map(c => {
