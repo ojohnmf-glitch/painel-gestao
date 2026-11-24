@@ -1,6 +1,6 @@
 # Meu Painel de Gestão
 
-Painel pessoal de gestão: visão por área, pontos de atenção da Pan, projetos para o 1:1,
+Painel pessoal de gestão: visão por área, pontos de atenção da gestora (nome configurável em Ajustes), projetos para o 1:1,
 prioridades, time e desenvolvimento. Um único arquivo, `index.html`, sem dependências.
 
 ## Onde os dados ficam

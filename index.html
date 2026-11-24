@@ -198,6 +198,7 @@ button.panel-head { border: 0; width: calc(100% + 2 * var(--card-pad)); text-ali
   <div class="brand"><div class="mark" aria-hidden="true">J</div><div><h1>Meu Painel de Gestão</h1><div class="week" id="hoje"></div></div></div>
   <div class="actions">
     <button class="btn text" id="btnOut" type="button" hidden>Sair</button>
+    <button class="btn text" id="btnCfg" type="button">Ajustes</button>
     <button class="btn text" id="btnCopy" type="button">Copiar pauta do 1:1</button>
     <button class="btn primary" id="btnNew" type="button" aria-haspopup="true" aria-expanded="false">Novo</button>
     <div class="menu" id="menuNew" hidden></div>
@@ -218,15 +219,20 @@ const GAPS = [["visibilidade","Visibilidade"],["gestora","Gestora"],["tempo","Te
 const PRIO = [["alta","Alta"],["media","Média"],["baixa","Baixa"]];
 const STATUS_ACAO = [["nao","Não iniciada"],["andamento","Em andamento"],["feita","Feita"],["travada","Travada"]];
 const CADENCIA = [["unica","Única"],["semanal","Semanal"]];
+/* Nome da gestora: vem do registro de configuração (id fixo "config"); rótulos que o citam são funções. */
+const G = () => String((items.get("config") || {}).gestora || "").trim() || "Gestora";
+const tx = v => typeof v === "function" ? v() : v;
 const TIPOS = {
+  config: { nome: "Ajustes", novo: "Ajustes", titulo: "gestora", idFixo: "config", oculto: true, campos: [
+    { k: "gestora", l: "Nome da gestora", t: "text", h: "Aparece no nome da aba, nos rótulos e na pauta do 1:1." } ] },
   area: { nome: "Área", novo: "Nova área", titulo: "nome", campos: [
     { k: "nome", l: "Nome da área", t: "text" },
     { k: "cor", l: "Cor", t: "select", o: CORES, d: "mint" }, { k: "saude", l: "Como está", t: "select", o: SAUDE, d: "ok" },
     { k: "resumo", l: "Leitura do momento", t: "area", h: "Em duas ou três linhas: o que está acontecendo na área." },
     { k: "destaques", l: "Destaques e avanços", t: "area" },
     { k: "riscos", l: "Riscos e pendências", t: "area" } ] },
-  atencao: { nome: "Ponto de atenção da Pan", novo: "Novo ponto de atenção da Pan", titulo: "titulo", campos: [
-    { k: "titulo", l: "O que a Pan apontou", t: "text" },
+  atencao: { nome: () => "Ponto de atenção da " + G(), novo: () => "Novo ponto de atenção da " + G(), titulo: "titulo", campos: [
+    { k: "titulo", l: () => "O que a " + G() + " apontou", t: "text" },
     { k: "area", l: "Área", t: "areaRef" }, { k: "data", l: "Quando foi levantado", t: "date" },
     { k: "detalhe", l: "Contexto", t: "area" },
     { k: "resposta", l: "O que estou fazendo a respeito", t: "area" },
@@ -236,7 +242,7 @@ const TIPOS = {
     { k: "area", l: "Área", t: "areaRef" }, { k: "saude", l: "Saúde", t: "select", o: SAUDE, d: "ok" },
     { k: "andamento", l: "Andamento para reportar", t: "area" },
     { k: "proximo", l: "Próximo passo", t: "area" },
-    { k: "pedido", l: "O que preciso da Pan", t: "area", h: "Decisão, aprovação, destrave ou só ciência." },
+    { k: "pedido", l: () => "O que preciso da " + G(), t: "area", h: "Decisão, aprovação, destrave ou só ciência." },
     { k: "levar", l: "Levar no próximo 1:1", t: "check", d: true } ] },
   prioridade: { nome: "Prioridade", novo: "Nova prioridade", titulo: "titulo", campos: [
     { k: "titulo", l: "Prioridade", t: "text" },
@@ -252,7 +258,7 @@ const TIPOS = {
     { k: "pauta", l: "Para o próximo 1:1 com a pessoa", t: "area" },
     { k: "comentarios", l: "Comentários", t: "log" } ] },
   avaliacao: { nome: "Avaliação", novo: "Nova avaliação", titulo: "ciclo", campos: [
-    { k: "ciclo", l: "Ciclo ou fonte", t: "text", h: "Ex.: Avaliação anual 2026, feedback da Pan em outubro." },
+    { k: "ciclo", l: "Ciclo ou fonte", t: "text", h: () => "Ex.: Avaliação anual 2026, feedback da " + G() + " em outubro." },
     { k: "resumo", l: "Resumo", t: "area" },
     { k: "fortes", l: "O que foi reconhecido", t: "area" },
     { k: "desenvolver", l: "O que foi apontado para desenvolver", t: "area" } ] },
@@ -270,7 +276,7 @@ const TIPOS = {
     { k: "criterio", l: "Como sei que está feito", t: "area" },
     { k: "notas", l: "Notas", t: "area" } ] }
 };
-const TABS = [["visao","Visão geral"],["areas","Áreas"],["pan","Pan"],["prioridades","Prioridades"],["time","Time"],["desenvolvimento","Desenvolvimento"]];
+const TABS = [["visao","Visão geral"],["areas","Áreas"],["pan",G],["prioridades","Prioridades"],["time","Time"],["desenvolvimento","Desenvolvimento"]];
 
 /* ---------- Estado e armazenamento ---------- */
 let items = new Map(), loaded = false, col = null, local = false, notice = "", tab = "visao";
@@ -342,7 +348,7 @@ async function initSupabase() {
   let primeira = true;
   sb.auth.onAuthStateChange((ev, session) => {
     const u = session ? session.user : null, mudou = (u && u.id) !== (user && user.id);
-    user = u; $("btnOut").hidden = !user; $("btnCopy").hidden = $("btnNew").hidden = !user;
+    user = u; $("btnOut").hidden = !user; $("btnCopy").hidden = $("btnNew").hidden = $("btnCfg").hidden = !user;
     if (!user) { items = new Map(); loaded = true; notice = ""; render(); return; }
     if (mudou || primeira) loadRemote(); primeira = false;
   });
@@ -405,7 +411,7 @@ function panel(title, cls, count, kids, emptyMsg) {
     ...(kids.length ? kids : [h("p", { class: "empty" }, emptyMsg)]));
 }
 const projRow = (p, full) => row(p, { meta: [areaChip(p.area), saudeChip(p.saude), p.levar && h("span", { class: "chip goal" }, "No próximo 1:1")],
-  detail: full && kv([["Andamento", p.andamento], ["Próximo passo", p.proximo], ["Preciso da Pan", p.pedido]]) });
+  detail: full && kv([["Andamento", p.andamento], ["Próximo passo", p.proximo], ["Preciso da " + G(), p.pedido]]) });
 const atRow = (a, full) => row(a, { check: "resolvido", checkLabel: "Marcar como endereçado", done: a.resolvido,
   meta: [areaChip(a.area), a.data && h("span", null, "desde " + fmtDate(a.data))],
   detail: full && kv([["Contexto", a.detalhe], ["O que estou fazendo", a.resposta]]) });
@@ -467,18 +473,18 @@ const VIEWS = {
     const dev = list("devponto").filter(d => d.status !== "feito"), areas = list("area");
     const stat = (n, label, to, cls) => h("button", { class: "stat " + (n ? cls || "" : ""), type: "button", onclick: () => go(to) }, h("b", { class: "num" }, n), h("span", null, label));
     return h("div", { class: "visao" },
-      h("aside", { class: "side" }, stat(agora.length, "prioridades agora", "prioridades"), stat(at.length, "pontos de atenção da Pan em aberto", "pan", "warn"),
+      h("aside", { class: "side" }, stat(agora.length, "prioridades agora", "prioridades"), stat(at.length, "pontos de atenção da " + G() + " em aberto", "pan", "warn"),
         stat(risco.length, "projetos em atenção ou críticos", "pan", "crit"), stat(dev.length, "pontos de desenvolvimento em curso", "desenvolvimento")),
       h("div", null,
         block("Áreas", null, null, areas.length ? h("div", { class: "areas-strip" }, areas.map(a => h("button", { class: "area-tile c-" + (a.cor || "gray"), type: "button", onclick: () => go("areas") },
           h("div", { class: "hd" }, h("span", { class: "dot " + (a.saude || "") }), a.nome), h("p", null, a.resumo || "Sem leitura registrada.")))) : h("p", { class: "empty" }, "Cadastre suas áreas na aba Áreas.")),
         block("Prioridades agora", null, "prioridade", panel(null, "plain", 0, agora.map(p => prioRow(p)), "Nenhuma prioridade no horizonte Agora.")),
-        block("Pontos de atenção da Pan", "Em aberto.", "atencao", panel(null, "plain", 0, at.map(a => atRow(a)), "Nenhum ponto em aberto.")),
+        block("Pontos de atenção da " + G(), "Em aberto.", "atencao", panel(null, "plain", 0, at.map(a => atRow(a)), "Nenhum ponto em aberto.")),
         block("Para o próximo 1:1", "Projetos marcados para reportar.", "projeto", panel(null, "plain", 0, levar.map(p => projRow(p)), "Nenhum projeto marcado para o próximo 1:1."))));
   },
   areas() {
     const areas = list("area");
-    return block("Visão por área", "Leitura do momento, destaques e riscos de cada área, com os projetos, pontos da Pan e prioridades ligados a ela.", "area",
+    return block("Visão por área", "Leitura do momento, destaques e riscos de cada área, com os projetos, pontos da " + G() + " e prioridades ligados a ela.", "area",
       areas.length ? h("div", { class: "grid" }, areas.map(a => {
         const pr = list("projeto").filter(p => p.area === a.id), at = list("atencao").filter(x => x.area === a.id && !x.resolvido), pri = list("prioridade").filter(x => x.area === a.id && !x.feito);
         return h("div", { class: "panel c-" + (a.cor || "gray") },
@@ -486,7 +492,7 @@ const VIEWS = {
           kv([["Leitura do momento", a.resumo], ["Destaques", a.destaques], ["Riscos e pendências", a.riscos]]),
           !(a.resumo || a.destaques || a.riscos) && h("p", { class: "empty" }, "Clique na faixa para registrar a leitura da área."),
           pr.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Projetos (" + pr.length + ")") : null, ...pr.map(p => projRow(p)),
-          at.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Pontos da Pan (" + at.length + ")") : null, ...at.map(x => atRow(x)),
+          at.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Pontos da " + G() + " (" + at.length + ")") : null, ...at.map(x => atRow(x)),
           pri.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Prioridades (" + pri.length + ")") : null, ...pri.map(x => prioRow(x)));
       })) : h("p", { class: "empty" }, "Nenhuma área cadastrada ainda."));
   },
@@ -494,7 +500,7 @@ const VIEWS = {
     const at = list("atencao"), ab = at.filter(a => !a.resolvido), ok = at.filter(a => a.resolvido), proj = list("projeto");
     const levar = proj.filter(p => p.levar), resto = proj.filter(p => !p.levar);
     return h("div", null,
-      block("Pontos de atenção da Pan", "O que ela apontou e o que você está fazendo a respeito. Marque quando estiver endereçado.", "atencao",
+      block("Pontos de atenção da " + G(), "O que ela apontou e o que você está fazendo a respeito. Marque quando estiver endereçado.", "atencao",
         panel("Em aberto", "c-sand", ab.length, ab.map(a => atRow(a, true)), "Nenhum ponto em aberto."),
         ok.length ? h("div", { style: "margin-top:12px" }, panel("Endereçados", "c-gray", ok.length, ok.map(a => atRow(a)), "")) : null),
       block("Projetos para reportar no 1:1", "Andamento, próximo passo e o que você precisa dela. O botão Copiar pauta do 1:1, no topo, monta o texto pronto.", "projeto",
@@ -537,10 +543,11 @@ const VIEWS = {
 };
 
 function render() {
+  montarMenu();
   $("tabs").replaceChildren(...TABS.map(([k, nome]) => { let n = "";
     if (k === "pan") n = list("atencao").filter(a => !a.resolvido).length || "";
     if (k === "prioridades") n = list("prioridade").filter(p => p.horizonte === "agora" && !p.feito).length || "";
-    return h("button", { class: "tab", role: "tab", type: "button", "aria-selected": String(tab === k), onclick: () => go(k) }, nome, n !== "" && h("sup", { class: "num" }, n)); }));
+    return h("button", { class: "tab", role: "tab", type: "button", "aria-selected": String(tab === k), onclick: () => go(k) }, tx(nome), n !== "" && h("sup", { class: "num" }, n)); }));
   const main = $("main");
   if (!loaded) { main.replaceChildren(notice ? h("div", { class: "notice" }, notice) : h("p", { class: "empty" }, "Carregando…")); return; }
   if (sb && !user) { main.replaceChildren(notice ? h("div", { class: "notice" }, notice) : "", loginView()); return; }
@@ -552,13 +559,13 @@ window.addEventListener("hashchange", () => { const k = location.hash.slice(1); 
 /* ---------- Gaveta de edição ---------- */
 function openDrawer(tipo, item) {
   const T = TIPOS[tipo], isNew = !item, host = $("drawerHost"), last = document.activeElement;
-  const draft = item ? JSON.parse(JSON.stringify(item)) : { id: "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), tipo, ordem: Date.now() };
+  const draft = item ? JSON.parse(JSON.stringify(item)) : { id: T.idFixo || "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), tipo, ordem: Date.now() };
   if (isNew) T.campos.forEach(c => { if (c.d !== undefined) draft[c.k] = c.d; if (c.t === "date" && c.k === "data") draft[c.k] = today(); });
   const close = () => { host.replaceChildren(); document.removeEventListener("keydown", onKey); if (last && last.focus) last.focus(); };
   const onKey = e => { if (e.key === "Escape") close(); };
   const fields = T.campos.map(c => {
     const fid = "f-" + c.k;
-    if (c.t === "check") return h("div", { class: "field check" }, h("input", { type: "checkbox", id: fid, checked: !!draft[c.k], onchange: e => draft[c.k] = e.target.checked }), h("label", { for: fid }, c.l));
+    if (c.t === "check") return h("div", { class: "field check" }, h("input", { type: "checkbox", id: fid, checked: !!draft[c.k], onchange: e => draft[c.k] = e.target.checked }), h("label", { for: fid }, tx(c.l)));
     if (c.t === "log") {
       draft[c.k] = Array.isArray(draft[c.k]) ? draft[c.k] : [];
       const box = h("div", { class: "log" });
@@ -567,7 +574,7 @@ function openDrawer(tipo, item) {
             h("button", { class: "mini", type: "button", "aria-label": "Remover comentário", onclick: () => { draft[c.k].splice(i, 1); paint(); } }, "×"))).reverse(),
           h("div", { class: "add" }, ta, h("button", { class: "btn small", type: "button", onclick: () => { const v = ta.value.trim(); if (v) { draft[c.k].push({ d: today(), t: v }); paint(); } } }, "Registrar"))); };
       paint(); box.pending = () => { const ta = box.querySelector("textarea"), v = ta && ta.value.trim(); if (v) draft[c.k].push({ d: today(), t: v }); };
-      return h("div", { class: "field", "data-log": "1" }, h("span", { class: "flabel" }, c.l), h("span", { class: "help" }, "Cada comentário fica com a data do registro. Salve para guardar."), box);
+      return h("div", { class: "field", "data-log": "1" }, h("span", { class: "flabel" }, tx(c.l)), h("span", { class: "help" }, "Cada comentário fica com a data do registro. Salve para guardar."), box);
     }
     let input;
     if (c.t === "select" || c.t === "areaRef") { const opts = c.t === "areaRef" ? [["", "Sem área"], ...list("area").map(a => [a.id, a.nome])] : c.o;
@@ -575,20 +582,20 @@ function openDrawer(tipo, item) {
     else if (c.t === "area") input = h("textarea", { id: fid, value: draft[c.k] || "", oninput: e => draft[c.k] = e.target.value });
     else if (c.t === "num") input = h("input", { id: fid, type: "number", min: "0", step: "1", inputmode: "numeric", value: draft[c.k] ?? "", oninput: e => draft[c.k] = e.target.value === "" ? "" : Number(e.target.value) });
     else input = h("input", { id: fid, type: c.t === "date" ? "date" : "text", value: draft[c.k] || "", oninput: e => draft[c.k] = e.target.value });
-    return h("div", { class: "field" }, h("label", { for: fid }, c.l), c.h && h("span", { class: "help" }, c.h), input);
+    return h("div", { class: "field" }, h("label", { for: fid }, tx(c.l)), c.h && h("span", { class: "help" }, tx(c.h)), input);
   });
   const body = h("div", { class: "drawer-body" }); let pair = null;
   fields.forEach((f, i) => { const c = T.campos[i], short = c.t === "select" || c.t === "areaRef" || c.t === "date" || c.t === "num" || (c.t === "text" && i > 0);
     if (short) { if (!pair) { pair = h("div", { class: "grid2" }); body.append(pair); } pair.append(f); if (pair.children.length === 2) pair = null; } else { pair = null; body.append(f); } });
   const btnSave = h("button", { class: "btn primary", type: "submit" }, "Salvar");
-  const btnDel = !isNew && h("button", { class: "btn danger", type: "button", onclick: async e => { const b = e.currentTarget;
+  const btnDel = !isNew && !T.idFixo && h("button", { class: "btn danger", type: "button", onclick: async e => { const b = e.currentTarget;
     if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "Confirmar exclusão"; return; } try { await del(draft.id); close(); } catch (er) {} } }, "Excluir");
-  const form = h("form", { class: "drawer", role: "dialog", "aria-modal": "true", "aria-label": T.nome, onsubmit: async e => { e.preventDefault();
+  const form = h("form", { class: "drawer", role: "dialog", "aria-modal": "true", "aria-label": tx(T.nome), onsubmit: async e => { e.preventDefault();
       body.querySelectorAll(".log").forEach(b => b.pending && b.pending());
       if (!String(draft[T.titulo] || "").trim()) { toast("Preencha o primeiro campo antes de salvar."); return; }
       const agora = new Date().toISOString(); draft.atualizadoEm = agora; if (!draft.criadoEm) draft.criadoEm = agora;
       btnSave.disabled = true; try { await put(draft); close(); } catch (er) { btnSave.disabled = false; } } },
-    h("div", { class: "drawer-head" }, h("h2", null, isNew ? T.novo : T.nome), h("button", { class: "mini", type: "button", "aria-label": "Fechar", onclick: close }, "×")),
+    h("div", { class: "drawer-head" }, h("h2", null, isNew ? tx(T.novo) : tx(T.nome)), h("button", { class: "mini", type: "button", "aria-label": "Fechar", onclick: close }, "×")),
     body, h("div", { class: "drawer-foot" }, btnDel, h("button", { class: "btn text", type: "button", onclick: close }, "Cancelar"), btnSave));
   host.replaceChildren(h("button", { class: "drawer-bg", type: "button", "aria-label": "Fechar", onclick: close }), form);
   document.addEventListener("keydown", onKey);
@@ -597,7 +604,8 @@ function openDrawer(tipo, item) {
 
 /* ---------- Topo: menu Novo e pauta do 1:1 ---------- */
 const menu = $("menuNew"), btnNew = $("btnNew");
-menu.append(...Object.entries(TIPOS).map(([k, T]) => h("button", { type: "button", onclick: () => { toggleMenu(false); openDrawer(k); } }, T.nome)));
+function montarMenu() { menu.replaceChildren(...Object.entries(TIPOS).filter(([, T]) => !T.oculto).map(([k, T]) => h("button", { type: "button", onclick: () => { toggleMenu(false); openDrawer(k); } }, tx(T.nome)))); }
+$("btnCfg").addEventListener("click", () => openDrawer("config", items.get("config")));
 function toggleMenu(on) { menu.hidden = !on; btnNew.setAttribute("aria-expanded", String(on)); }
 btnNew.addEventListener("click", e => { e.stopPropagation(); toggleMenu(menu.hidden); });
 document.addEventListener("click", e => { if (!menu.contains(e.target)) toggleMenu(false); });
