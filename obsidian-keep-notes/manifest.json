@@ -1,0 +1,9 @@
+{
+  "id": "keep-notes",
+  "name": "Keep Notes",
+  "version": "0.1.0",
+  "minAppVersion": "1.4.0",
+  "description": "Notas rápidas estilo Google Keep: grade de post-its coloridos, botão Nova nota, pasta fixa e barra de formatação.",
+  "author": "John",
+  "isDesktopOnly": false
+}
