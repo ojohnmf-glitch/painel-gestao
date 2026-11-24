@@ -16,7 +16,8 @@ Visão geral, Áreas, a aba da gestora (nome configurável; pontos de atenção 
   A gaveta de edição (`openDrawer`) é gerada a partir dele. Campo novo = uma linha em `campos`.
 - `config`: registro único de ajustes (id fixo `config`, botão Ajustes no topo, sem excluir). Guarda o nome da
   gestora; `G()` devolve esse nome e os rótulos que o citam em `TIPOS` são funções, resolvidas por `tx()`.
-  Padrão quando vazio: "Gestora". Nunca escrever o nome real no código.
+  Padrão quando vazio: "Gestora". Nunca escrever o nome real no código. Guarda também `gaps` (um por linha):
+  `gapsOpts()` junta os quatro padrão, os de Ajustes e qualquer valor já usado nas ações.
 - Ordenação por arrasto: `sortable(container, onDrop)` arrasta pelo `.grip` (ponteiro, serve para mouse e toque) e
   `reordenar(ids)` grava `ordem` sequencial. Edição direto na tabela: `inlineTexto` e `inlineData`.
 - `VIEWS`: uma função por aba, que devolve o DOM da tela. `render()` redesenha tudo a cada mudança.

@@ -112,18 +112,12 @@ button.panel-head { border: 0; width: calc(100% + 2 * var(--card-pad)); text-ali
 .mini:hover { background: var(--mist); color: var(--ink); }
 
 /* Visão geral */
-.visao { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 24px; align-items: start; }
-.side { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 12px; }
-.stat { background: var(--paper); border-radius: 18px; box-shadow: var(--shadow); padding: 14px 18px; border: 0; text-align: left; }
-.stat b { display: block; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
-.stat span { font-size: 13px; color: var(--fog); }
-.stat.crit b { color: var(--crit-text); } .stat.warn b { color: var(--warn-text); }
 .areas-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); grid-template-rows: auto auto; gap: 12px; }
 .area-tile { background: var(--fcs); border-radius: 16px; border: 0; text-align: left; padding: 0 0 12px; overflow: hidden; display: grid; grid-template-rows: subgrid; grid-row: span 2; row-gap: 0; }
 .area-tile .hd { background: var(--fc); color: var(--fct); font-weight: 700; padding: 8px 14px; display: flex; gap: 8px; align-items: center; font-size: 14px; min-height: 52px; line-height: 1.3; overflow-wrap: anywhere; }
 .area-tile .hd .dot { margin: 0; outline: 2px solid rgba(255,255,255,.7); }
 .area-tile p { padding: 8px 14px 0; font-size: 13px; color: var(--ash); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-@media (max-width: 760px) { .visao { grid-template-columns: 1fr; } .side { position: static; flex-direction: row; flex-wrap: wrap; } .stat { flex: 1 1 140px; } .brand h1 { font-size: 24px; } }
+@media (max-width: 760px) { .brand h1 { font-size: 24px; } }
 
 /* Pessoas */
 .person { background: var(--paper); border-radius: var(--r-card); box-shadow: var(--shadow); padding: 20px var(--card-pad); border: 0; text-align: left; width: 100%; display: block; }
@@ -148,13 +142,15 @@ textarea.inl { width: 100%; resize: vertical; min-height: 44px; font-weight: 600
 .toolbar { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; margin-bottom: 4px; font-size: 13px; color: var(--fog); }
 .toolbar label { display: inline-flex; gap: 6px; align-items: center; }
 .toolbar select { border: 1px solid var(--hairline); border-radius: var(--r-pill); padding: 4px 10px; background: var(--paper); font-size: 13px; }
-.tbl .tr { display: grid; grid-template-columns: 18px minmax(0, 2.4fr) 1fr 1fr 1.1fr 1fr 1fr 56px; gap: 6px 10px; padding: 10px 0; border-top: 1px solid rgba(20,30,40,.09); align-items: start; }
+.tbl { overflow-x: auto; margin: 0 calc(-1 * var(--card-pad)); padding: 0 var(--card-pad); }
+.tbl .tr { display: grid; grid-template-columns: 18px minmax(200px, 2.4fr) minmax(120px, 1fr) minmax(96px, .9fr) minmax(136px, 1.1fr) minmax(136px, 1fr) minmax(96px, .9fr) 56px; min-width: 880px; gap: 6px 10px; padding: 10px 0; border-top: 1px solid rgba(20,30,40,.09); align-items: start; }
 .tbl .tr.th { font-size: 12px; font-weight: 600; color: var(--fog); text-transform: uppercase; letter-spacing: .04em; border-top: 0; padding-bottom: 4px; }
 .tbl .tr.late { box-shadow: inset 3px 0 0 var(--crit); padding-left: 12px; }
 .tbl .tr.feita .t, .tbl .tr.feita textarea.inl { text-decoration: line-through; color: var(--fog); font-weight: 400; }
 .tbl .td.acts { display: flex; gap: 2px; justify-content: flex-end; }
 .tbl .td.grip-cell { padding-top: 1px; }
 .tbl .td { min-width: 0; font-size: 14px; }
+.tbl .chip { white-space: normal; }
 .tbl .td .sub { font-size: 13px; color: var(--fog); margin-top: 2px; overflow-wrap: anywhere; }
 .tbl .td.main .t { display: block; width: 100%; border: 1px solid transparent; border-radius: 4px; padding: 0 4px; margin: 0 -4px; background: transparent; text-align: left; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; cursor: text; }
 .tbl .td.main .t:hover { border-color: var(--hairline); }
@@ -165,7 +161,8 @@ textarea.inl { width: 100%; resize: vertical; min-height: 44px; font-weight: 600
 .prog .mini { border: 1px solid var(--hairline); font-weight: 700; }
 .late-chip { color: var(--crit-text); font-weight: 600; font-size: 12px; }
 @media (max-width: 760px) {
-  .tbl .tr { grid-template-columns: 1fr 1fr; background: var(--paper); border-radius: 16px; box-shadow: var(--shadow); padding: 14px 16px; margin-bottom: 12px; border-top: 0; }
+  .tbl { overflow: visible; margin: 0; padding: 0; }
+  .tbl .tr { grid-template-columns: 1fr 1fr; min-width: 0; background: var(--paper); border-radius: 16px; box-shadow: var(--shadow); padding: 14px 16px; margin-bottom: 12px; border-top: 0; }
   .tbl .tr.late { box-shadow: var(--shadow), inset 4px 0 0 var(--crit); padding-left: 16px; }
   .tbl .tr.th { display: none; }
   .tbl .td.main, .tbl .td.wide { grid-column: 1 / -1; }
@@ -225,7 +222,12 @@ textarea.inl { width: 100%; resize: vertical; min-height: 44px; font-weight: 600
 const SAUDE = [["ok","No trilho"],["atencao","Atenção"],["critico","Crítico"]];
 const CORES = [["lime","Verde-claro"],["mint","Menta"],["lav","Lavanda"],["forest","Verde-floresta"],["sand","Areia"],["gray","Cinza"]];
 const HORIZ = [["agora","Agora"],["proximo","Próximo"],["depois","Depois"]];
-const GAPS = [["visibilidade","Visibilidade"],["gestora","Gestora"],["tempo","Tempo e priorização"],["time","Time"]];
+const GAPS_PADRAO = [["visibilidade","Visibilidade"],["gestora","Gestora"],["tempo","Tempo e priorização"],["time","Time"]];
+function gapsOpts() {
+  const extra = String((items.get("config") || {}).gaps || "").split("\n").map(x => x.trim()).filter(Boolean);
+  const o = [...GAPS_PADRAO]; const add = v => { if (v && !o.some(x => x[0] === v)) o.push([v, v]); };
+  extra.forEach(add); [...items.values()].forEach(i => { if (i.tipo === "acaodev") add(i.gap); }); return o;
+}
 const PRIO = [["alta","Alta"],["media","Média"],["baixa","Baixa"]];
 const STATUS_ACAO = [["nao","Não iniciada"],["andamento","Em andamento"],["feita","Feita"],["travada","Travada"]];
 const CADENCIA = [["unica","Única"],["semanal","Semanal"]];
@@ -234,7 +236,8 @@ const G = () => String((items.get("config") || {}).gestora || "").trim() || "Ges
 const tx = v => typeof v === "function" ? v() : v;
 const TIPOS = {
   config: { nome: "Ajustes", novo: "Ajustes", titulo: "gestora", idFixo: "config", oculto: true, campos: [
-    { k: "gestora", l: "Nome da gestora", t: "text", h: "Aparece no nome da aba, nos rótulos e na pauta do 1:1." } ] },
+    { k: "gestora", l: "Nome da gestora", t: "text", h: "Aparece no nome da aba, nos rótulos e na pauta do 1:1." },
+    { k: "gaps", l: "Gaps adicionais do plano de ação", t: "area", h: "Um por linha. Visibilidade, Gestora, Tempo e priorização e Time já existem." } ] },
   area: { nome: "Área", novo: "Nova área", titulo: "nome", campos: [
     { k: "nome", l: "Nome da área", t: "text" },
     { k: "cor", l: "Cor", t: "select", o: CORES, d: "mint" }, { k: "saude", l: "Como está", t: "select", o: SAUDE, d: "ok" },
@@ -283,7 +286,7 @@ const TIPOS = {
     { k: "evidencia", l: "Evidências e avanços", t: "area" } ] },
   acaodev: { nome: "Ação do plano de desenvolvimento", novo: "Nova ação", titulo: "acao", campos: [
     { k: "acao", l: "O que fazer", t: "text" },
-    { k: "gap", l: "Gap", t: "select", o: GAPS, d: "visibilidade" }, { k: "prioridade", l: "Prioridade", t: "select", o: PRIO, d: "media" },
+    { k: "gap", l: "Gap", t: "select", o: gapsOpts, d: "visibilidade", h: "Novos gaps são cadastrados em Ajustes." }, { k: "prioridade", l: "Prioridade", t: "select", o: PRIO, d: "media" },
     { k: "status", l: "Status", t: "select", o: STATUS_ACAO, d: "nao" }, { k: "prazo", l: "Prazo", t: "date" },
     { k: "cadencia", l: "Cadência", t: "select", o: CADENCIA, d: "unica" }, { k: "envolvidos", l: "Envolvidos", t: "text" },
     { k: "progFeito", l: "Semanas cumpridas", t: "num", h: "Só para ações semanais." }, { k: "progTotal", l: "Total de semanas", t: "num" },
@@ -487,7 +490,7 @@ function planoAcao() {
       td("Ação", "main", inlineTexto(a, "acao", "t"),
         a.criterio && h("div", { class: "sub" }, "Feito quando: " + a.criterio),
         a.envolvidos && h("div", { class: "sub" }, "Com: " + a.envolvidos)),
-      td("Gap", "", h("span", { class: "chip" }, lbl(GAPS, a.gap) || "—")),
+      td("Gap", "", h("span", { class: "chip" }, lbl(gapsOpts(), a.gap) || "—")),
       td("Prioridade", "", selChip(a, "prioridade", PRIO, "Prioridade")),
       td("Status", "", selChip(a, "status", STATUS_ACAO, "Status")),
       td("Prazo", "", inlineData(a, "prazo", "Prazo"), vencida(a) && h("div", { class: "late-chip" }, "vencida")),
@@ -497,10 +500,10 @@ function planoAcao() {
         h("button", { class: "mini danger btn", type: "button", "aria-label": "Excluir ação", style: "width:auto;padding:0 6px;font-size:12px", onclick: e => { const b = e.currentTarget;
         if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "Confirmar"; b.setAttribute("aria-label", "Confirmar exclusão"); return; } del(a.id).catch(() => {}); } }, "×")));
   };
-  return block("Plano de ação", "Ações ligadas à avaliação de desempenho. Texto, prazo, status e prioridade editam direto na tabela; o lápis abre todos os campos. Arraste pelo ⋮⋮ para ordenar.", "acaodev",
+  return block("Plano de ação", null, "acaodev",
     h("div", { class: "panel plain" },
       h("div", { class: "toolbar" }, filtro("ord", "Ordenar por", [["manual", "Minha ordem"], ["prazo", "Prazo"], ["prioridade", "Prioridade"]]),
-        filtro("gap", "Gap", [["", "Todos"], ...GAPS]), filtro("status", "Status", [["", "Todos"], ...STATUS_ACAO])),
+        filtro("gap", "Gap", [["", "Todos"], ...gapsOpts()]), filtro("status", "Status", [["", "Todos"], ...STATUS_ACAO])),
       rows.length ? sortable(h("div", { class: "tbl" },
         h("div", { class: "tr th" }, ...["", "Ação", "Gap", "Prioridade", "Status", "Prazo", "Progresso", ""].map(t => h("div", { class: "td" }, t))),
         rows.map(linha)), reordenar) : h("p", { class: "empty" }, all.length ? "Nenhuma ação com esses filtros." : "Nenhuma ação ainda. Use Adicionar para criar a primeira.")));
@@ -516,18 +519,13 @@ const iniRow = p => { const venc = p.prazo && p.prazo < today();
 const VIEWS = {
   visao() {
     const at = list("atencao").filter(a => !a.resolvido), proj = list("projeto"), levar = proj.filter(p => p.levar);
-    const risco = proj.filter(p => p.saude === "critico" || p.saude === "atencao"), agora = list("prioridade").filter(p => p.horizonte === "agora" && !p.feito);
-    const dev = list("devponto").filter(d => d.status !== "feito"), areas = list("area");
-    const stat = (n, label, to, cls) => h("button", { class: "stat " + (n ? cls || "" : ""), type: "button", onclick: () => go(to) }, h("b", { class: "num" }, n), h("span", null, label));
-    return h("div", { class: "visao" },
-      h("aside", { class: "side" }, stat(agora.length, "prioridades agora", "prioridades"), stat(at.length, "pontos de atenção da " + G() + " em aberto", "pan", "warn"),
-        stat(risco.length, "projetos em atenção ou críticos", "pan", "crit"), stat(dev.length, "pontos de desenvolvimento em curso", "desenvolvimento")),
-      h("div", null,
+    const agora = list("prioridade").filter(p => p.horizonte === "agora" && !p.feito), areas = list("area");
+    return h("div", null,
         block("Áreas", null, null, areas.length ? h("div", { class: "areas-strip" }, areas.map(a => h("button", { class: "area-tile c-" + (a.cor || "gray"), type: "button", onclick: () => go("areas") },
           h("div", { class: "hd" }, h("span", { class: "dot " + (a.saude || "") }), a.nome), h("p", null, a.resumo || "Sem leitura registrada.")))) : h("p", { class: "empty" }, "Cadastre suas áreas na aba Áreas.")),
         block("Prioridades agora", null, "prioridade", panel(null, "plain", 0, agora.map(p => prioRow(p)), "Nenhuma prioridade no horizonte Agora.")),
         block("Pontos de atenção da " + G(), "Em aberto.", "atencao", panel(null, "plain", 0, at.map(a => atRow(a)), "Nenhum ponto em aberto.")),
-        block("Para o próximo 1:1", "Projetos marcados para reportar.", "projeto", panel(null, "plain", 0, levar.map(p => projRow(p)), "Nenhum projeto marcado para o próximo 1:1."))));
+        block("Para o próximo 1:1", "Projetos marcados para reportar.", "projeto", panel(null, "plain", 0, levar.map(p => projRow(p)), "Nenhum projeto marcado para o próximo 1:1.")));
   },
   areas() {
     const areas = list("area");
@@ -627,7 +625,7 @@ function openDrawer(tipo, item, preset) {
       return h("div", { class: "field", "data-log": "1" }, h("span", { class: "flabel" }, tx(c.l)), h("span", { class: "help" }, "Cada comentário fica com a data do registro. Salve para guardar."), box);
     }
     let input;
-    if (c.t === "select" || c.t === "areaRef") { const opts = c.t === "areaRef" ? [["", "Sem área"], ...list("area").map(a => [a.id, a.nome])] : c.o;
+    if (c.t === "select" || c.t === "areaRef") { const opts = c.t === "areaRef" ? [["", "Sem área"], ...list("area").map(a => [a.id, a.nome])] : tx(c.o);
       input = h("select", { id: fid, onchange: e => draft[c.k] = e.target.value }, opts.map(([v, n]) => h("option", { value: v }, n))); input.value = draft[c.k] || opts[0][0]; draft[c.k] = input.value; }
     else if (c.t === "area") input = h("textarea", { id: fid, value: draft[c.k] || "", oninput: e => draft[c.k] = e.target.value });
     else if (c.t === "num") input = h("input", { id: fid, type: "number", min: "0", step: "1", inputmode: "numeric", value: draft[c.k] ?? "", oninput: e => draft[c.k] = e.target.value === "" ? "" : Number(e.target.value) });
@@ -642,7 +640,7 @@ function openDrawer(tipo, item, preset) {
     if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "Confirmar exclusão"; return; } try { await del(draft.id); close(); } catch (er) {} } }, "Excluir");
   const form = h("form", { class: "drawer", role: "dialog", "aria-modal": "true", "aria-label": tx(T.nome), onsubmit: async e => { e.preventDefault();
       body.querySelectorAll(".log").forEach(b => b.pending && b.pending());
-      if (!String(draft[T.titulo] || "").trim()) { toast("Preencha o primeiro campo antes de salvar."); return; }
+      if (!T.idFixo && !String(draft[T.titulo] || "").trim()) { toast("Preencha o primeiro campo antes de salvar."); return; }
       const agora = new Date().toISOString(); draft.atualizadoEm = agora; if (!draft.criadoEm) draft.criadoEm = agora;
       btnSave.disabled = true; try { await put(draft); close(); } catch (er) { btnSave.disabled = false; } } },
     h("div", { class: "drawer-head" }, h("h2", null, isNew ? tx(T.novo) : tx(T.nome)), h("button", { class: "mini", type: "button", "aria-label": "Fechar", onclick: close }, "×")),
