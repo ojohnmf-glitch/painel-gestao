@@ -10,7 +10,8 @@ Visão geral, Áreas, Dani (pontos de atenção da gestora e projetos para o 1:1
 
 ## Como o código está organizado
 
-- `TIPOS`: esquema de cada tipo de registro (`area`, `atencao`, `projeto`, `prioridade`, `pessoa`, `avaliacao`, `devponto`).
+- `TIPOS`: esquema de cada tipo de registro (`area`, `atencao`, `projeto`, `prioridade`, `pessoa`, `avaliacao`, `devponto`,
+  `acaodev`, que é o plano de ação da aba Desenvolvimento, desenhado em `planoAcao()` como tabela que vira cards no celular).
   A gaveta de edição (`openDrawer`) é gerada a partir dele. Campo novo = uma linha em `campos`.
 - `VIEWS`: uma função por aba, que devolve o DOM da tela. `render()` redesenha tudo a cada mudança.
 - `h(tag, attrs, ...filhos)`: único jeito de criar DOM. Texto do usuário entra sempre como nó de texto, nunca como HTML.
@@ -27,6 +28,8 @@ Visão geral, Áreas, Dani (pontos de atenção da gestora e projetos para o 1:1
   no `index.html` é pública por desenho. Não repetir o modelo do `pauta_mkt` (aberto para quem tem o link).
 - `file://` ou falha ao carregar a biblioteca: `localStorage` (chave `painel-gestao-v1`). Na primeira entrada com a
   conta e a nuvem vazia, o conteúdo local é importado e a chave apagada.
+- Dados iniciais do plano de ação ficam só no banco (`privado.plano_inicial`): um trigger em `auth.users` os copia
+  para `itens` quando a conta é criada. Nada de seed no código.
 - Configuração manual no painel do Supabase (Authentication → URL Configuration): Site URL e Redirect URL apontando
   para a URL do GitHub Pages, senão o link do e-mail volta para localhost.
 

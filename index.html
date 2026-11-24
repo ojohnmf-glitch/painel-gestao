@@ -133,6 +133,37 @@ button.panel-head { border: 0; width: calc(100% + 2 * var(--card-pad)); text-ali
 .person h3 { font-size: 17px; font-weight: 700; }
 .person .role { font-size: 13px; color: var(--fog); }
 
+/* Plano de ação */
+.plano-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.plano-stats .stat { flex: 1 1 140px; }
+.toolbar { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; margin-bottom: 4px; font-size: 13px; color: var(--fog); }
+.toolbar label { display: inline-flex; gap: 6px; align-items: center; }
+.toolbar select { border: 1px solid var(--hairline); border-radius: var(--r-pill); padding: 4px 10px; background: var(--paper); font-size: 13px; }
+.tbl .tr { display: grid; grid-template-columns: minmax(0, 2.4fr) 1fr 1fr 1.1fr .9fr 1fr 32px; gap: 6px 10px; padding: 10px 0; border-top: 1px solid rgba(20,30,40,.09); align-items: start; }
+.tbl .tr.th { font-size: 12px; font-weight: 600; color: var(--fog); text-transform: uppercase; letter-spacing: .04em; border-top: 0; padding-bottom: 4px; }
+.tbl .tr.late { box-shadow: inset 3px 0 0 var(--crit); padding-left: 12px; }
+.tbl .tr.feita .t { text-decoration: line-through; color: var(--fog); font-weight: 400; }
+.tbl .td { min-width: 0; font-size: 14px; }
+.tbl .td .sub { font-size: 13px; color: var(--fog); margin-top: 2px; overflow-wrap: anywhere; }
+.tbl .td.main .body { display: block; width: 100%; border: 0; background: transparent; text-align: left; padding: 0; }
+.tbl .td.main .body:hover .t { color: var(--primary-deep); }
+.tbl .td.main .t { font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.tbl .td::before { display: none; content: attr(data-l); font-size: 11px; font-weight: 600; color: var(--fog); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+.sel { appearance: none; -webkit-appearance: none; border: 0; border-radius: 4px; padding: 0 20px 0 8px; font-size: 13px; line-height: 1.5; background: var(--mist) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235f666e' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 6px center; color: var(--ash); max-width: 100%; cursor: pointer; }
+.sel.alta, .sel.travada { background-color: var(--crit-soft); color: var(--crit-text); } .sel.media, .sel.andamento { background-color: var(--warn-soft); color: var(--warn-text); } .sel.baixa, .sel.feita { background-color: var(--ok-soft); color: var(--ok-text); }
+.prog { display: inline-flex; gap: 6px; align-items: center; }
+.prog .mini { border: 1px solid var(--hairline); font-weight: 700; }
+.late-chip { color: var(--crit-text); font-weight: 600; font-size: 12px; }
+@media (max-width: 760px) {
+  .tbl .tr { grid-template-columns: 1fr 1fr; background: var(--paper); border-radius: 16px; box-shadow: var(--shadow); padding: 14px 16px; margin-bottom: 12px; border-top: 0; }
+  .tbl .tr.late { box-shadow: var(--shadow), inset 4px 0 0 var(--crit); padding-left: 16px; }
+  .tbl .tr.th { display: none; }
+  .tbl .td.main, .tbl .td.wide { grid-column: 1 / -1; }
+  .tbl .td::before { display: block; }
+  .tbl .td.main::before { display: none; }
+  .tbl .td.del { grid-column: 2; justify-self: end; }
+}
+
 /* Gaveta */
 .drawer-bg { position: fixed; inset: 0; background: rgba(48,51,54,.32); z-index: 20; border: 0; width: 100%; height: 100%; cursor: default; }
 .drawer { position: fixed; top: 16px; right: 16px; bottom: 16px; width: calc(100% - 32px); max-width: 540px; background: var(--paper); box-shadow: var(--shadow-lg); z-index: 21; display: flex; flex-direction: column; border-radius: var(--r-card); }
@@ -183,6 +214,10 @@ button.panel-head { border: 0; width: calc(100% + 2 * var(--card-pad)); text-ali
 const SAUDE = [["ok","No trilho"],["atencao","Atenção"],["critico","Crítico"]];
 const CORES = [["lime","Verde-claro"],["mint","Menta"],["lav","Lavanda"],["forest","Verde-floresta"],["sand","Areia"],["gray","Cinza"]];
 const HORIZ = [["agora","Agora"],["proximo","Próximo"],["depois","Depois"]];
+const GAPS = [["visibilidade","Visibilidade"],["gestora","Gestora"],["tempo","Tempo e priorização"],["time","Time"]];
+const PRIO = [["alta","Alta"],["media","Média"],["baixa","Baixa"]];
+const STATUS_ACAO = [["nao","Não iniciada"],["andamento","Em andamento"],["feita","Feita"],["travada","Travada"]];
+const CADENCIA = [["unica","Única"],["semanal","Semanal"]];
 const TIPOS = {
   area: { nome: "Área", novo: "Nova área", titulo: "nome", campos: [
     { k: "nome", l: "Nome da área", t: "text" },
@@ -225,7 +260,15 @@ const TIPOS = {
     { k: "titulo", l: "O que preciso desenvolver", t: "text" },
     { k: "acao", l: "Ação concreta", t: "area" },
     { k: "prazo", l: "Prazo", t: "date" }, { k: "status", l: "Status", t: "select", o: [["aberto","Não iniciado"],["andamento","Em andamento"],["feito","Concluído"]], d: "aberto" },
-    { k: "evidencia", l: "Evidências e avanços", t: "area" } ] }
+    { k: "evidencia", l: "Evidências e avanços", t: "area" } ] },
+  acaodev: { nome: "Ação do plano de desenvolvimento", novo: "Nova ação", titulo: "acao", campos: [
+    { k: "acao", l: "O que fazer", t: "text" },
+    { k: "gap", l: "Gap", t: "select", o: GAPS, d: "visibilidade" }, { k: "prioridade", l: "Prioridade", t: "select", o: PRIO, d: "media" },
+    { k: "status", l: "Status", t: "select", o: STATUS_ACAO, d: "nao" }, { k: "prazo", l: "Prazo", t: "date" },
+    { k: "cadencia", l: "Cadência", t: "select", o: CADENCIA, d: "unica" }, { k: "envolvidos", l: "Envolvidos", t: "text" },
+    { k: "progFeito", l: "Semanas cumpridas", t: "num", h: "Só para ações semanais." }, { k: "progTotal", l: "Total de semanas", t: "num" },
+    { k: "criterio", l: "Como sei que está feito", t: "area" },
+    { k: "notas", l: "Notas", t: "area" } ] }
 };
 const TABS = [["visao","Visão geral"],["areas","Áreas"],["dani","Dani"],["prioridades","Prioridades"],["time","Time"],["desenvolvimento","Desenvolvimento"]];
 
@@ -264,7 +307,7 @@ async function put(item) {
     items.set(id, item); render(); return; }
   try { await col.doc(id).set(data); } catch (e) { toast("Não consegui salvar. Tente de novo em instantes."); throw e; }
 }
-async function patch(id, fields) { const cur = items.get(id); if (cur) return put({ ...cur, ...fields }).catch(() => {}); }
+async function patch(id, fields) { const cur = items.get(id); if (cur) return put({ ...cur, ...fields, atualizadoEm: new Date().toISOString() }).catch(() => {}); }
 async function del(id) {
   if (local) { items.delete(id); saveLocal(); render(); return; }
   if (sb) { const { error } = await sb.from("itens").delete().eq("id", id);
@@ -311,12 +354,13 @@ async function loadRemote(silencioso) {
   if (error) { if (!silencioso) { notice = "Não consegui abrir os dados do painel. Recarregue a página para tentar de novo."; loaded = true; render(); } return; }
   items = new Map(data.map(r => [r.id, { ...(r.dados || {}), id: r.id, tipo: r.tipo, ordem: r.ordem == null ? undefined : Number(r.ordem) }]));
   notice = ""; loaded = true; $("hoje").textContent = $("hoje").textContent.split(" · ")[0] + " · " + user.email; render();
-  if (!silencioso && !items.size) importarLocal();
+  if (!silencioso) importarLocal();
 }
 async function importarLocal() { /* Primeiro acesso com a nuvem vazia: traz o que havia no modo local deste navegador. */
   let antigos = []; try { antigos = JSON.parse(localStorage.getItem(LS) || "[]"); } catch (e) {}
   if (!antigos.length) return;
-  const linhas = antigos.filter(i => i && i.id && i.tipo).map(({ id, tipo, ordem, ...dados }) => ({ id, tipo, ordem: ordem == null ? null : Math.round(ordem), dados }));
+  const linhas = antigos.filter(i => i && i.id && i.tipo && !items.has(i.id)).map(({ id, tipo, ordem, ...dados }) => ({ id, tipo, ordem: ordem == null ? null : Math.round(ordem), dados }));
+  if (!linhas.length) { try { localStorage.removeItem(LS); } catch (e) {} return; }
   const { error } = await sb.from("itens").upsert(linhas);
   if (error) return;
   try { localStorage.removeItem(LS); } catch (e) {}
@@ -370,6 +414,50 @@ const prioRow = (p, i, arr) => row(p, { check: "feito", checkLabel: "Marcar como
     h("button", { class: "mini", type: "button", "aria-label": "Descer", disabled: i === arr.length - 1, onclick: () => swap(arr, i, i + 1) }, "↓")] : [] });
 async function swap(arr, i, j) { const a = arr[i], b = arr[j]; if (!a || !b) return; const oa = a.ordem || 0, ob = b.ordem || 0;
   await patch(a.id, { ordem: ob === oa ? oa + (j > i ? 1 : -1) : ob }); await patch(b.id, { ordem: oa }); }
+
+/* ---------- Plano de ação (aba Desenvolvimento) ---------- */
+const planoUI = { ord: "prazo", gap: "", status: "" };
+const vencida = a => a.prazo && a.prazo < today() && a.status !== "feita";
+function selChip(item, campo, opts, label) {
+  const s = h("select", { class: "sel " + (item[campo] || ""), "aria-label": label, onchange: e => patch(item.id, { [campo]: e.target.value }) }, opts.map(([v, n]) => h("option", { value: v }, n)));
+  s.value = item[campo] || opts[0][0]; return s;
+}
+function planoAcao() {
+  const all = list("acaodev"), feitas = all.filter(a => a.status === "feita"), atrasadas = all.filter(vencida);
+  const rank = { alta: 0, media: 1, baixa: 2 }, byPrazo = (a, b) => (a.prazo || "9999") < (b.prazo || "9999") ? -1 : (a.prazo || "9999") > (b.prazo || "9999") ? 1 : 0;
+  let rows = all.filter(a => (!planoUI.gap || a.gap === planoUI.gap) && (!planoUI.status || a.status === planoUI.status));
+  rows.sort(planoUI.ord === "prioridade" ? (a, b) => (rank[a.prioridade] ?? 9) - (rank[b.prioridade] ?? 9) || byPrazo(a, b) : byPrazo);
+  const filtro = (k, label, opts) => h("label", null, label, h("select", { value: planoUI[k], onchange: e => { planoUI[k] = e.target.value; render(); } },
+    opts.map(([v, n]) => { const o = h("option", { value: v }, n); if (v === planoUI[k]) o.selected = true; return o; })));
+  const td = (l, cls, ...kids) => h("div", { class: "td " + (cls || ""), "data-l": l }, ...kids);
+  const linha = a => {
+    const semanal = a.cadencia === "semanal", total = Number(a.progTotal) || 0, feito = Number(a.progFeito) || 0;
+    return h("div", { class: "tr" + (vencida(a) ? " late" : "") + (a.status === "feita" ? " feita" : "") },
+      td("Ação", "main", h("button", { class: "body", type: "button", onclick: () => openDrawer("acaodev", a) },
+        h("div", { class: "t" }, a.acao || "(sem título)"),
+        a.criterio && h("div", { class: "sub" }, "Feito quando: " + a.criterio),
+        a.envolvidos && h("div", { class: "sub" }, "Com: " + a.envolvidos))),
+      td("Gap", "", h("span", { class: "chip" }, lbl(GAPS, a.gap) || "—")),
+      td("Prioridade", "", selChip(a, "prioridade", PRIO, "Prioridade")),
+      td("Status", "", selChip(a, "status", STATUS_ACAO, "Status")),
+      td("Prazo", "", h("div", null, a.prazo ? fmtDate(a.prazo) : "—"), vencida(a) && h("div", { class: "late-chip" }, "vencida")),
+      td("Progresso", "", semanal ? h("div", { class: "prog" }, h("span", { class: "num" }, feito + " de " + total),
+        h("button", { class: "mini", type: "button", "aria-label": "Marcar mais uma semana", title: "+1 semana", disabled: total > 0 && feito >= total, onclick: () => patch(a.id, { progFeito: feito + 1 }) }, "+1")) : h("span", { class: "sub" }, "única")),
+      td("", "del", h("button", { class: "mini danger btn", type: "button", "aria-label": "Excluir ação", style: "width:auto;padding:0 6px;font-size:12px", onclick: e => { const b = e.currentTarget;
+        if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "Confirmar"; b.setAttribute("aria-label", "Confirmar exclusão"); return; } del(a.id).catch(() => {}); } }, "×")));
+  };
+  return block("Plano de ação", "Ações ligadas à avaliação de desempenho. Clique na ação para editar; status e prioridade mudam direto na tabela.", "acaodev",
+    h("div", { class: "plano-stats" },
+      h("div", { class: "stat" }, h("b", { class: "num" }, all.length), h("span", null, all.length === 1 ? "ação" : "ações")),
+      h("div", { class: "stat" }, h("b", { class: "num" }, feitas.length), h("span", null, "feitas")),
+      h("div", { class: "stat" + (atrasadas.length ? " crit" : "") }, h("b", { class: "num" }, atrasadas.length), h("span", null, "atrasadas"))),
+    h("div", { class: "panel plain" },
+      h("div", { class: "toolbar" }, filtro("ord", "Ordenar por", [["prazo", "Prazo"], ["prioridade", "Prioridade"]]),
+        filtro("gap", "Gap", [["", "Todos"], ...GAPS]), filtro("status", "Status", [["", "Todos"], ...STATUS_ACAO])),
+      rows.length ? h("div", { class: "tbl" },
+        h("div", { class: "tr th" }, ...["Ação", "Gap", "Prioridade", "Status", "Prazo", "Progresso", ""].map(t => h("div", { class: "td" }, t))),
+        rows.map(linha)) : h("p", { class: "empty" }, all.length ? "Nenhuma ação com esses filtros." : "Nenhuma ação ainda. Use Adicionar para criar a primeira.")));
+}
 
 /* ---------- Telas ---------- */
 const VIEWS = {
@@ -436,6 +524,7 @@ const VIEWS = {
   desenvolvimento() {
     const av = list("avaliacao"), dp = list("devponto");
     return h("div", null,
+      planoAcao(),
       block("Pontos principais a desenvolver", "O que você precisa trabalhar, com ação concreta e prazo.", "devponto",
         panel(null, "plain", 0, dp.map(d => row(d, { saude: false, done: d.status === "feito",
           meta: [h("span", { class: "chip " + (d.status === "feito" ? "ok" : d.status === "andamento" ? "atencao" : "") }, lbl(TIPOS.devponto.campos[3].o, d.status || "aberto")), d.prazo && h("span", null, "prazo " + fmtDate(d.prazo))],
@@ -484,11 +573,12 @@ function openDrawer(tipo, item) {
     if (c.t === "select" || c.t === "areaRef") { const opts = c.t === "areaRef" ? [["", "Sem área"], ...list("area").map(a => [a.id, a.nome])] : c.o;
       input = h("select", { id: fid, onchange: e => draft[c.k] = e.target.value }, opts.map(([v, n]) => h("option", { value: v }, n))); input.value = draft[c.k] || opts[0][0]; draft[c.k] = input.value; }
     else if (c.t === "area") input = h("textarea", { id: fid, value: draft[c.k] || "", oninput: e => draft[c.k] = e.target.value });
+    else if (c.t === "num") input = h("input", { id: fid, type: "number", min: "0", step: "1", inputmode: "numeric", value: draft[c.k] ?? "", oninput: e => draft[c.k] = e.target.value === "" ? "" : Number(e.target.value) });
     else input = h("input", { id: fid, type: c.t === "date" ? "date" : "text", value: draft[c.k] || "", oninput: e => draft[c.k] = e.target.value });
     return h("div", { class: "field" }, h("label", { for: fid }, c.l), c.h && h("span", { class: "help" }, c.h), input);
   });
   const body = h("div", { class: "drawer-body" }); let pair = null;
-  fields.forEach((f, i) => { const c = T.campos[i], short = c.t === "select" || c.t === "areaRef" || c.t === "date" || (c.t === "text" && i > 0);
+  fields.forEach((f, i) => { const c = T.campos[i], short = c.t === "select" || c.t === "areaRef" || c.t === "date" || c.t === "num" || (c.t === "text" && i > 0);
     if (short) { if (!pair) { pair = h("div", { class: "grid2" }); body.append(pair); } pair.append(f); if (pair.children.length === 2) pair = null; } else { pair = null; body.append(f); } });
   const btnSave = h("button", { class: "btn primary", type: "submit" }, "Salvar");
   const btnDel = !isNew && h("button", { class: "btn danger", type: "button", onclick: async e => { const b = e.currentTarget;
@@ -496,6 +586,7 @@ function openDrawer(tipo, item) {
   const form = h("form", { class: "drawer", role: "dialog", "aria-modal": "true", "aria-label": T.nome, onsubmit: async e => { e.preventDefault();
       body.querySelectorAll(".log").forEach(b => b.pending && b.pending());
       if (!String(draft[T.titulo] || "").trim()) { toast("Preencha o primeiro campo antes de salvar."); return; }
+      const agora = new Date().toISOString(); draft.atualizadoEm = agora; if (!draft.criadoEm) draft.criadoEm = agora;
       btnSave.disabled = true; try { await put(draft); close(); } catch (er) { btnSave.disabled = false; } } },
     h("div", { class: "drawer-head" }, h("h2", null, isNew ? T.novo : T.nome), h("button", { class: "mini", type: "button", "aria-label": "Fechar", onclick: close }, "×")),
     body, h("div", { class: "drawer-foot" }, btnDel, h("button", { class: "btn text", type: "button", onclick: close }, "Cancelar"), btnSave));
