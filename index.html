@@ -225,8 +225,8 @@ const TIPOS = {
     { k: "resumo", l: "Leitura do momento", t: "area", h: "Em duas ou três linhas: o que está acontecendo na área." },
     { k: "destaques", l: "Destaques e avanços", t: "area" },
     { k: "riscos", l: "Riscos e pendências", t: "area" } ] },
-  atencao: { nome: "Ponto de atenção da Dani", novo: "Novo ponto de atenção da Dani", titulo: "titulo", campos: [
-    { k: "titulo", l: "O que a Dani apontou", t: "text" },
+  atencao: { nome: "Ponto de atenção da Pan", novo: "Novo ponto de atenção da Pan", titulo: "titulo", campos: [
+    { k: "titulo", l: "O que a Pan apontou", t: "text" },
     { k: "area", l: "Área", t: "areaRef" }, { k: "data", l: "Quando foi levantado", t: "date" },
     { k: "detalhe", l: "Contexto", t: "area" },
     { k: "resposta", l: "O que estou fazendo a respeito", t: "area" },
@@ -236,7 +236,7 @@ const TIPOS = {
     { k: "area", l: "Área", t: "areaRef" }, { k: "saude", l: "Saúde", t: "select", o: SAUDE, d: "ok" },
     { k: "andamento", l: "Andamento para reportar", t: "area" },
     { k: "proximo", l: "Próximo passo", t: "area" },
-    { k: "pedido", l: "O que preciso da Dani", t: "area", h: "Decisão, aprovação, destrave ou só ciência." },
+    { k: "pedido", l: "O que preciso da Pan", t: "area", h: "Decisão, aprovação, destrave ou só ciência." },
     { k: "levar", l: "Levar no próximo 1:1", t: "check", d: true } ] },
   prioridade: { nome: "Prioridade", novo: "Nova prioridade", titulo: "titulo", campos: [
     { k: "titulo", l: "Prioridade", t: "text" },
@@ -252,7 +252,7 @@ const TIPOS = {
     { k: "pauta", l: "Para o próximo 1:1 com a pessoa", t: "area" },
     { k: "comentarios", l: "Comentários", t: "log" } ] },
   avaliacao: { nome: "Avaliação", novo: "Nova avaliação", titulo: "ciclo", campos: [
-    { k: "ciclo", l: "Ciclo ou fonte", t: "text", h: "Ex.: Avaliação anual 2026, feedback da Dani em outubro." },
+    { k: "ciclo", l: "Ciclo ou fonte", t: "text", h: "Ex.: Avaliação anual 2026, feedback da Pan em outubro." },
     { k: "resumo", l: "Resumo", t: "area" },
     { k: "fortes", l: "O que foi reconhecido", t: "area" },
     { k: "desenvolver", l: "O que foi apontado para desenvolver", t: "area" } ] },
@@ -270,7 +270,7 @@ const TIPOS = {
     { k: "criterio", l: "Como sei que está feito", t: "area" },
     { k: "notas", l: "Notas", t: "area" } ] }
 };
-const TABS = [["visao","Visão geral"],["areas","Áreas"],["dani","Dani"],["prioridades","Prioridades"],["time","Time"],["desenvolvimento","Desenvolvimento"]];
+const TABS = [["visao","Visão geral"],["areas","Áreas"],["pan","Pan"],["prioridades","Prioridades"],["time","Time"],["desenvolvimento","Desenvolvimento"]];
 
 /* ---------- Estado e armazenamento ---------- */
 let items = new Map(), loaded = false, col = null, local = false, notice = "", tab = "visao";
@@ -405,7 +405,7 @@ function panel(title, cls, count, kids, emptyMsg) {
     ...(kids.length ? kids : [h("p", { class: "empty" }, emptyMsg)]));
 }
 const projRow = (p, full) => row(p, { meta: [areaChip(p.area), saudeChip(p.saude), p.levar && h("span", { class: "chip goal" }, "No próximo 1:1")],
-  detail: full && kv([["Andamento", p.andamento], ["Próximo passo", p.proximo], ["Preciso da Dani", p.pedido]]) });
+  detail: full && kv([["Andamento", p.andamento], ["Próximo passo", p.proximo], ["Preciso da Pan", p.pedido]]) });
 const atRow = (a, full) => row(a, { check: "resolvido", checkLabel: "Marcar como endereçado", done: a.resolvido,
   meta: [areaChip(a.area), a.data && h("span", null, "desde " + fmtDate(a.data))],
   detail: full && kv([["Contexto", a.detalhe], ["O que estou fazendo", a.resposta]]) });
@@ -467,18 +467,18 @@ const VIEWS = {
     const dev = list("devponto").filter(d => d.status !== "feito"), areas = list("area");
     const stat = (n, label, to, cls) => h("button", { class: "stat " + (n ? cls || "" : ""), type: "button", onclick: () => go(to) }, h("b", { class: "num" }, n), h("span", null, label));
     return h("div", { class: "visao" },
-      h("aside", { class: "side" }, stat(agora.length, "prioridades agora", "prioridades"), stat(at.length, "pontos de atenção da Dani em aberto", "dani", "warn"),
-        stat(risco.length, "projetos em atenção ou críticos", "dani", "crit"), stat(dev.length, "pontos de desenvolvimento em curso", "desenvolvimento")),
+      h("aside", { class: "side" }, stat(agora.length, "prioridades agora", "prioridades"), stat(at.length, "pontos de atenção da Pan em aberto", "pan", "warn"),
+        stat(risco.length, "projetos em atenção ou críticos", "pan", "crit"), stat(dev.length, "pontos de desenvolvimento em curso", "desenvolvimento")),
       h("div", null,
         block("Áreas", null, null, areas.length ? h("div", { class: "areas-strip" }, areas.map(a => h("button", { class: "area-tile c-" + (a.cor || "gray"), type: "button", onclick: () => go("areas") },
           h("div", { class: "hd" }, h("span", { class: "dot " + (a.saude || "") }), a.nome), h("p", null, a.resumo || "Sem leitura registrada.")))) : h("p", { class: "empty" }, "Cadastre suas áreas na aba Áreas.")),
         block("Prioridades agora", null, "prioridade", panel(null, "plain", 0, agora.map(p => prioRow(p)), "Nenhuma prioridade no horizonte Agora.")),
-        block("Pontos de atenção da Dani", "Em aberto.", "atencao", panel(null, "plain", 0, at.map(a => atRow(a)), "Nenhum ponto em aberto.")),
+        block("Pontos de atenção da Pan", "Em aberto.", "atencao", panel(null, "plain", 0, at.map(a => atRow(a)), "Nenhum ponto em aberto.")),
         block("Para o próximo 1:1", "Projetos marcados para reportar.", "projeto", panel(null, "plain", 0, levar.map(p => projRow(p)), "Nenhum projeto marcado para o próximo 1:1."))));
   },
   areas() {
     const areas = list("area");
-    return block("Visão por área", "Leitura do momento, destaques e riscos de cada área, com os projetos, pontos da Dani e prioridades ligados a ela.", "area",
+    return block("Visão por área", "Leitura do momento, destaques e riscos de cada área, com os projetos, pontos da Pan e prioridades ligados a ela.", "area",
       areas.length ? h("div", { class: "grid" }, areas.map(a => {
         const pr = list("projeto").filter(p => p.area === a.id), at = list("atencao").filter(x => x.area === a.id && !x.resolvido), pri = list("prioridade").filter(x => x.area === a.id && !x.feito);
         return h("div", { class: "panel c-" + (a.cor || "gray") },
@@ -486,15 +486,15 @@ const VIEWS = {
           kv([["Leitura do momento", a.resumo], ["Destaques", a.destaques], ["Riscos e pendências", a.riscos]]),
           !(a.resumo || a.destaques || a.riscos) && h("p", { class: "empty" }, "Clique na faixa para registrar a leitura da área."),
           pr.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Projetos (" + pr.length + ")") : null, ...pr.map(p => projRow(p)),
-          at.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Pontos da Dani (" + at.length + ")") : null, ...at.map(x => atRow(x)),
+          at.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Pontos da Pan (" + at.length + ")") : null, ...at.map(x => atRow(x)),
           pri.length ? h("div", { class: "lbl row", style: "border:0;padding:10px 0 0" }, "Prioridades (" + pri.length + ")") : null, ...pri.map(x => prioRow(x)));
       })) : h("p", { class: "empty" }, "Nenhuma área cadastrada ainda."));
   },
-  dani() {
+  pan() {
     const at = list("atencao"), ab = at.filter(a => !a.resolvido), ok = at.filter(a => a.resolvido), proj = list("projeto");
     const levar = proj.filter(p => p.levar), resto = proj.filter(p => !p.levar);
     return h("div", null,
-      block("Pontos de atenção da Dani", "O que ela apontou e o que você está fazendo a respeito. Marque quando estiver endereçado.", "atencao",
+      block("Pontos de atenção da Pan", "O que ela apontou e o que você está fazendo a respeito. Marque quando estiver endereçado.", "atencao",
         panel("Em aberto", "c-sand", ab.length, ab.map(a => atRow(a, true)), "Nenhum ponto em aberto."),
         ok.length ? h("div", { style: "margin-top:12px" }, panel("Endereçados", "c-gray", ok.length, ok.map(a => atRow(a)), "")) : null),
       block("Projetos para reportar no 1:1", "Andamento, próximo passo e o que você precisa dela. O botão Copiar pauta do 1:1, no topo, monta o texto pronto.", "projeto",
@@ -538,7 +538,7 @@ const VIEWS = {
 
 function render() {
   $("tabs").replaceChildren(...TABS.map(([k, nome]) => { let n = "";
-    if (k === "dani") n = list("atencao").filter(a => !a.resolvido).length || "";
+    if (k === "pan") n = list("atencao").filter(a => !a.resolvido).length || "";
     if (k === "prioridades") n = list("prioridade").filter(p => p.horizonte === "agora" && !p.feito).length || "";
     return h("button", { class: "tab", role: "tab", type: "button", "aria-selected": String(tab === k), onclick: () => go(k) }, nome, n !== "" && h("sup", { class: "num" }, n)); }));
   const main = $("main");

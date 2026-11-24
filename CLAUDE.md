@@ -6,7 +6,7 @@ Painel pessoal de gestão do John (Marketing Manager, JBS). É só dele: separad
 ## O que é
 
 Um único `index.html` (HTML, CSS e JS inline, sem build e sem dependências). Seis abas:
-Visão geral, Áreas, Dani (pontos de atenção da gestora e projetos para o 1:1), Prioridades, Time, Desenvolvimento.
+Visão geral, Áreas, Pan (pontos de atenção da gestora e projetos para o 1:1), Prioridades, Time, Desenvolvimento.
 
 ## Como o código está organizado
 
