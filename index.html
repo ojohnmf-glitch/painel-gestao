@@ -155,6 +155,9 @@ button.panel-head { border: 0; width: calc(100% + 2 * var(--card-pad)); text-ali
 .log .entry div { flex: 1; min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
 .log .entry time { display: block; font-size: 12px; color: var(--fog); }
 .log .add { display: flex; gap: 8px; align-items: flex-start; }
+.login { max-width: 440px; margin: 24px auto 0; background: var(--paper); border-radius: var(--r-card); box-shadow: var(--shadow); padding: 28px var(--card-pad); display: flex; flex-direction: column; gap: 14px; }
+.login h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.login p { color: var(--fog); font-size: 14px; }
 .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: var(--r-pill); font-size: 14px; z-index: 30; box-shadow: var(--shadow-lg); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -163,6 +166,7 @@ button.panel-head { border: 0; width: calc(100% + 2 * var(--card-pad)); text-ali
 <header class="topbar"><div class="topbar-inner">
   <div class="brand"><div class="mark" aria-hidden="true">J</div><div><h1>Meu Painel de Gestão</h1><div class="week" id="hoje"></div></div></div>
   <div class="actions">
+    <button class="btn text" id="btnOut" type="button" hidden>Sair</button>
     <button class="btn text" id="btnCopy" type="button">Copiar pauta do 1:1</button>
     <button class="btn primary" id="btnNew" type="button" aria-haspopup="true" aria-expanded="false">Novo</button>
     <div class="menu" id="menuNew" hidden></div>
@@ -228,6 +232,11 @@ const TABS = [["visao","Visão geral"],["areas","Áreas"],["dani","Dani"],["prio
 /* ---------- Estado e armazenamento ---------- */
 let items = new Map(), loaded = false, col = null, local = false, notice = "", tab = "visao";
 const LS = "painel-gestao-v1";
+/* Supabase (versão hospedada). A chave publicável é pública por desenho: quem protege os dados é o RLS
+   (cada usuário só lê e grava os próprios registros) e a lista de e-mails autorizados a entrar. */
+const SUPABASE = { url: "https://dyugezzehsewxjwhpqnw.supabase.co", key: "sb_publishable_4a7Nddrb5eq3waL7tqb-Cw_MiwL0V86",
+  lib: "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" };
+let sb = null, user = null;
 const $ = id => document.getElementById(id);
 function h(tag, attrs, ...kids) {
   const e = document.createElement(tag);
@@ -249,22 +258,26 @@ function saveLocal() { try { localStorage.setItem(LS, JSON.stringify([...items.v
 async function put(item) {
   const { id, ...data } = item;
   if (local) { items.set(id, item); saveLocal(); render(); return; }
+  if (sb) { const { tipo, ordem, ...dados } = data;
+    const { error } = await sb.from("itens").upsert({ id, tipo, ordem: ordem == null ? null : Math.round(ordem), dados });
+    if (error) { toast("Não consegui salvar. Tente de novo em instantes."); throw error; }
+    items.set(id, item); render(); return; }
   try { await col.doc(id).set(data); } catch (e) { toast("Não consegui salvar. Tente de novo em instantes."); throw e; }
 }
 async function patch(id, fields) { const cur = items.get(id); if (cur) return put({ ...cur, ...fields }).catch(() => {}); }
 async function del(id) {
   if (local) { items.delete(id); saveLocal(); render(); return; }
+  if (sb) { const { error } = await sb.from("itens").delete().eq("id", id);
+    if (error) { toast("Não consegui excluir. Tente de novo em instantes."); throw error; }
+    items.delete(id); render(); return; }
   try { await col.doc(id).delete(); } catch (e) { toast("Não consegui excluir. Tente de novo em instantes."); throw e; }
 }
 async function init() {
   const timer = setTimeout(() => { if (!loaded) { notice = "Os dados ainda não chegaram. Eles aparecem aqui assim que a conexão responder."; render(); } }, 10000);
   let db = null;
   try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch (e) {}
-  if (!db) {
-    local = true; clearTimeout(timer);
-    try { JSON.parse(localStorage.getItem(LS) || "[]").forEach(i => items.set(i.id, i)); } catch (e) {}
-    notice = "Modo local: o que você digitar fica só neste navegador."; loaded = true; render(); return;
-  }
+  if (!db && SUPABASE.url && location.protocol !== "file:") { clearTimeout(timer); return initSupabase(); }
+  if (!db) { clearTimeout(timer); return initLocal(); }
   col = db.collection("itens");
   $("hoje").textContent += " · visível só para você";
   col.onSnapshot(snap => {
@@ -272,6 +285,54 @@ async function init() {
     if (!snap.metadata.fromCache) { clearTimeout(timer); notice = ""; }
     loaded = true; render();
   }, () => { clearTimeout(timer); loaded = true; notice = "Não consegui abrir os dados do painel. Recarregue a página para tentar de novo."; render(); });
+}
+
+function initLocal(aviso) {
+  local = true;
+  try { JSON.parse(localStorage.getItem(LS) || "[]").forEach(i => items.set(i.id, i)); } catch (e) {}
+  notice = aviso || "Modo local: o que você digitar fica só neste navegador."; loaded = true; render();
+}
+function loadScript(src) { return new Promise((ok, fail) => { const t = document.createElement("script"); t.src = src; t.onload = ok; t.onerror = fail; document.head.append(t); }); }
+async function initSupabase() {
+  try { await loadScript(SUPABASE.lib); sb = window.supabase.createClient(SUPABASE.url, SUPABASE.key); }
+  catch (e) { return initLocal("Não consegui conectar ao servidor. Modo local: o que você digitar fica só neste navegador."); }
+  let primeira = true;
+  sb.auth.onAuthStateChange((ev, session) => {
+    const u = session ? session.user : null, mudou = (u && u.id) !== (user && user.id);
+    user = u; $("btnOut").hidden = !user; $("btnCopy").hidden = $("btnNew").hidden = !user;
+    if (!user) { items = new Map(); loaded = true; notice = ""; render(); return; }
+    if (mudou || primeira) loadRemote(); primeira = false;
+  });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && user) loadRemote(true); });
+  $("btnOut").addEventListener("click", () => sb.auth.signOut());
+}
+async function loadRemote(silencioso) {
+  const { data, error } = await sb.from("itens").select("id,tipo,ordem,dados");
+  if (error) { if (!silencioso) { notice = "Não consegui abrir os dados do painel. Recarregue a página para tentar de novo."; loaded = true; render(); } return; }
+  items = new Map(data.map(r => [r.id, { ...(r.dados || {}), id: r.id, tipo: r.tipo, ordem: r.ordem == null ? undefined : Number(r.ordem) }]));
+  notice = ""; loaded = true; $("hoje").textContent = $("hoje").textContent.split(" · ")[0] + " · " + user.email; render();
+  if (!silencioso && !items.size) importarLocal();
+}
+async function importarLocal() { /* Primeiro acesso com a nuvem vazia: traz o que havia no modo local deste navegador. */
+  let antigos = []; try { antigos = JSON.parse(localStorage.getItem(LS) || "[]"); } catch (e) {}
+  if (!antigos.length) return;
+  const linhas = antigos.filter(i => i && i.id && i.tipo).map(({ id, tipo, ordem, ...dados }) => ({ id, tipo, ordem: ordem == null ? null : Math.round(ordem), dados }));
+  const { error } = await sb.from("itens").upsert(linhas);
+  if (error) return;
+  try { localStorage.removeItem(LS); } catch (e) {}
+  toast(linhas.length + (linhas.length === 1 ? " registro trazido" : " registros trazidos") + " do modo local para a sua conta.");
+  loadRemote(true);
+}
+function loginView() {
+  const email = h("input", { type: "email", id: "f-email", required: true, autocomplete: "email", placeholder: "seu e-mail" });
+  const btn = h("button", { class: "btn primary", type: "submit" }, "Enviar link de acesso");
+  const msg = h("p", null, "Só o e-mail autorizado consegue entrar. Você recebe um link e abre o painel sem senha.");
+  return h("form", { class: "login", onsubmit: async e => { e.preventDefault(); btn.disabled = true;
+      const { error } = await sb.auth.signInWithOtp({ email: email.value.trim(), options: { emailRedirectTo: location.origin + location.pathname } });
+      btn.disabled = false;
+      if (error) { msg.textContent = "Não consegui enviar o link. Confira se este é o e-mail autorizado e tente de novo."; return; }
+      msg.textContent = "Link enviado para " + email.value.trim() + ". Abra o e-mail neste mesmo dispositivo para entrar."; } },
+    h("h2", null, "Entrar no painel"), msg, h("div", { class: "field" }, h("label", { for: "f-email" }, "E-mail"), email), btn);
 }
 
 /* ---------- Peças de interface ---------- */
@@ -393,6 +454,7 @@ function render() {
     return h("button", { class: "tab", role: "tab", type: "button", "aria-selected": String(tab === k), onclick: () => go(k) }, nome, n !== "" && h("sup", { class: "num" }, n)); }));
   const main = $("main");
   if (!loaded) { main.replaceChildren(notice ? h("div", { class: "notice" }, notice) : h("p", { class: "empty" }, "Carregando…")); return; }
+  if (sb && !user) { main.replaceChildren(notice ? h("div", { class: "notice" }, notice) : "", loginView()); return; }
   main.replaceChildren(notice ? h("div", { class: "notice" }, notice) : "", VIEWS[tab]());
 }
 function go(k) { tab = VIEWS[k] ? k : "visao"; try { if (location.hash !== "#" + tab) location.hash = tab; } catch (e) {} render(); window.scrollTo(0, 0); }

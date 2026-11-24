@@ -20,9 +20,15 @@ Visão geral, Áreas, Dani (pontos de atenção da gestora e projetos para o 1:1
 ## Armazenamento
 
 - Como artifact no claude.ai: banco do artifact (`claude.use("db")`), regra de leitura e escrita só do dono.
-- Hospedado (GitHub Pages): `localStorage` (chave `painel-gestao-v1`). Os dados ficam só naquele navegador.
-- Em aberto: sincronizar entre dispositivos na versão hospedada. Se for feito com Supabase, precisa de login
-  restrito ao e-mail do John e RLS por usuário. Não repetir o modelo do `pauta_mkt` (aberto para quem tem o link).
+- Hospedado (GitHub Pages): Supabase, projeto `painel-gestao` (ref `dyugezzehsewxjwhpqnw`, região sa-east-1), separado
+  do `pauta_mkt`. Tabela `public.itens` (`id`, `user_id`, `tipo`, `dados` jsonb, `ordem`) com RLS por usuário.
+  Login por link mágico (`signInWithOtp`); um trigger em `auth.users` só deixa criar conta para e-mails listados em
+  `privado.emails_permitidos`. A biblioteca `supabase-js` é carregada do jsDelivr só neste modo; a chave publicável
+  no `index.html` é pública por desenho. Não repetir o modelo do `pauta_mkt` (aberto para quem tem o link).
+- `file://` ou falha ao carregar a biblioteca: `localStorage` (chave `painel-gestao-v1`). Na primeira entrada com a
+  conta e a nuvem vazia, o conteúdo local é importado e a chave apagada.
+- Configuração manual no painel do Supabase (Authentication → URL Configuration): Site URL e Redirect URL apontando
+  para a URL do GitHub Pages, senão o link do e-mail volta para localhost.
 
 ## Regras
 
