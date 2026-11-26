@@ -6,7 +6,8 @@ Painel pessoal de gestão do John (Marketing Manager, JBS). É só dele: separad
 ## O que é
 
 Um único `index.html` (HTML, CSS e JS inline, sem build e sem dependências). Seis abas:
-Visão geral, Áreas, a aba da gestora (nome configurável; pontos de atenção dela e projetos para o 1:1), Prioridades, Time, Desenvolvimento.
+Visão geral (painel de pautas: listas de tarefas em modo lista ou quadro kanban), Áreas, a aba da gestora (nome configurável;
+pontos de atenção dela e projetos para o 1:1), Prioridades, Time, Desenvolvimento.
 
 ## Como o código está organizado
 
@@ -14,12 +15,16 @@ Visão geral, Áreas, a aba da gestora (nome configurável; pontos de atenção 
   `acaodev`, que é o plano de ação da aba Desenvolvimento, desenhado em `planoAcao()` como tabela que vira cards no celular,
   e `iniciativa`, projeto simples de uma área com título, prazo e descrição, listado dentro do cartão da área).
   A gaveta de edição (`openDrawer`) é gerada a partir dele. Campo novo = uma linha em `campos`.
+- Painel de pautas (`pautas()`): tipos `lista` (bloco ou coluna, título editável no lugar) e `tarefa` (texto editável no
+  lugar, `feito`, `prazo`, `prioridade` alta/media/baixa). O modo (`lista` ou `quadro`) fica em `config.visaoModo`.
+  Menu flutuante `openPop` + `popOpcoes` para data (Hoje, Amanhã, +7 dias, escolher) e prioridade. Tarefas arrastam
+  dentro e entre blocos (`sortable` com `group`), blocos arrastam entre si. Concluídas vão para o fim do bloco.
 - `config`: registro único de ajustes (id fixo `config`, botão Ajustes no topo, sem excluir). Guarda o nome da
   gestora; `G()` devolve esse nome e os rótulos que o citam em `TIPOS` são funções, resolvidas por `tx()`.
   Padrão quando vazio: "Gestora". Nunca escrever o nome real no código. Guarda também `gaps` (um por linha):
   `gapsOpts()` junta os quatro padrão, os de Ajustes e qualquer valor já usado nas ações.
-- Ordenação por arrasto: `sortable(container, onDrop)` arrasta pelo `.grip` (ponteiro, serve para mouse e toque) e
-  `reordenar(ids)` grava `ordem` sequencial. Edição direto na tabela: `inlineTexto` e `inlineData`.
+- Ordenação por arrasto: `sortable(container, onDrop, {group, horizontal, zone})` arrasta pelo `.grip` (ponteiro, serve
+  para mouse e toque); `onDrop(ids, destino)`. `reordenar(ids)` grava `ordem` sequencial; `moverTarefas` troca também a lista. Edição direto na tabela: `inlineTexto` e `inlineData`.
 - `VIEWS`: uma função por aba, que devolve o DOM da tela. `render()` redesenha tudo a cada mudança.
 - `h(tag, attrs, ...filhos)`: único jeito de criar DOM. Texto do usuário entra sempre como nó de texto, nunca como HTML.
 - Dados: todos os registros ficam numa coleção `itens`, um documento por registro, com o campo `tipo`.
