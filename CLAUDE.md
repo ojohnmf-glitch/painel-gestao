@@ -17,9 +17,11 @@ pontos de atenção dela e projetos para o 1:1), Prioridades, Time, Desenvolvime
   A gaveta de edição (`openDrawer`) é gerada a partir dele. Campo novo = uma linha em `campos`.
 - Painel de pautas (`pautas()`): tipos `lista` (bloco ou coluna, título editável no lugar) e `tarefa` (texto editável no
   lugar, `feito`, `prazo`, `prioridade` alta/media/baixa). O modo (`lista` ou `quadro`) fica em `config.visaoModo`.
-  Menu flutuante `openPop` + `popOpcoes` para data (Hoje, Amanhã, +7 dias, escolher) e prioridade. Tarefas arrastam
-  dentro e entre blocos (`sortable` com `group`), blocos arrastam entre si. Concluídas vão para o fim do bloco.
-- `config`: registro único de ajustes (id fixo `config`, botão Ajustes no topo, sem excluir). Guarda o nome da
+  Menu flutuante `openPop` + `popOpcoes` (pela setinha) para data (Hoje, Amanhã, +7 dias, Escolher abre `calendario()`
+  desenhado no próprio menu), prioridade, Arquivar e Excluir; clicar de novo na opção marcada desmarca. Tarefas arrastam
+  dentro e entre blocos (`sortable` com `group`), blocos arrastam entre si. Concluídas vão para o fim do bloco;
+  arquivadas (`arquivada: true`) somem e voltam pelo rodapé "Mostrar n arquivadas".
+- `config`: registro único de ajustes (id fixo `config`, item "Ajustes…" no fim do menu Novo, sem excluir). Guarda o nome da
   gestora; `G()` devolve esse nome e os rótulos que o citam em `TIPOS` são funções, resolvidas por `tx()`.
   Padrão quando vazio: "Gestora". Nunca escrever o nome real no código. Guarda também `gaps` (um por linha):
   `gapsOpts()` junta os quatro padrão, os de Ajustes e qualquer valor já usado nas ações.

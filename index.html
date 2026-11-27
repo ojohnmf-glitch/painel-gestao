@@ -61,6 +61,7 @@ h1, h2, h3 { text-wrap: balance; line-height: 1.2; }
 .menu { position: absolute; right: 0; top: calc(100% + 8px); background: var(--paper); border-radius: 14px; box-shadow: var(--shadow-lg); padding: 8px; min-width: 240px; z-index: 15; display: flex; flex-direction: column; }
 .menu button { border: 0; background: transparent; text-align: left; padding: 8px 12px; border-radius: 6px; font-size: 14px; }
 .menu button:hover, .menu button:focus-visible { background: var(--mist); }
+.menu button.sep { border-top: 1px solid var(--hairline); border-radius: 0 0 6px 6px; margin-top: 4px; padding-top: 10px; color: var(--fog); }
 
 .tabbar { position: sticky; top: 0; z-index: 5; background: var(--canopy); }
 .tabbar-inner { padding-top: 16px; padding-bottom: 12px; overflow-x: auto; }
@@ -112,8 +113,7 @@ button.panel-head { border: 0; width: calc(100% + 2 * var(--card-pad)); text-ali
 .mini:hover { background: var(--mist); color: var(--ink); }
 
 /* Visão geral: painel de pautas (lista ou quadro) */
-.pautas-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
-.pautas-top h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.025em; margin-right: auto; }
+.pautas-top { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
 .seg { display: inline-flex; background: var(--mist); border-radius: var(--r-pill); padding: 3px; }
 .seg button { border: 0; background: transparent; border-radius: var(--r-pill); padding: 5px 14px; font-size: 14px; font-weight: 600; color: var(--fog); }
 .seg button[aria-pressed="true"] { background: var(--paper); color: var(--ink); box-shadow: var(--shadow); }
@@ -161,10 +161,19 @@ button.panel-head { border: 0; width: calc(100% + 2 * var(--card-pad)); text-ali
 .pop-grid button { border: 0; background: transparent; border-radius: 8px; padding: 6px 2px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--ash); position: relative; }
 .pop-grid button:hover, .pop-grid button[aria-pressed="true"] { background: var(--mist); }
 .pop-grid button svg { width: 20px; height: 20px; }
-.pop-grid input[type=date] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.cal { background: var(--canopy); border-radius: 10px; padding: 8px 10px 10px; }
+.cal-nav { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 4px; text-transform: capitalize; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.cal-grid .wd { font-size: 11px; color: var(--fog); font-weight: 600; }
+.cal-grid button { border: 0; background: transparent; border-radius: 6px; height: 30px; font-size: 13px; color: var(--ink); padding: 0; }
+.cal-grid button:hover { background: var(--mist); }
+.cal-grid button.hoje { font-weight: 700; color: var(--primary-deep); }
+.cal-grid button.sel { background: var(--primary); color: #fff; }
 .pop .linha { display: flex; gap: 6px; }
 .pop .linha .btn { flex: 1; justify-content: center; }
 .vazio { color: var(--fog); font-size: 14px; padding: 8px 4px; }
+.arq-foot { margin-top: 8px; } .arq-foot > .btn { padding-left: 6px; padding-right: 6px; color: var(--fog); }
+.arq-list { margin-top: 6px; } .todo.arq { opacity: .6; } .todo.arq .grip { visibility: hidden; }
 @media (max-width: 760px) { .board .col { flex-basis: 84vw; } .stack { max-width: none; } .todo .grip { opacity: .4; } }
 @media (max-width: 760px) { .brand h1 { font-size: 24px; } }
 
@@ -254,8 +263,6 @@ textarea.inl { width: 100%; resize: vertical; min-height: 44px; font-weight: 600
   <div class="brand"><div class="mark" aria-hidden="true">J</div><div><h1>Meu Painel de Gestão</h1><div class="week" id="hoje"></div></div></div>
   <div class="actions">
     <button class="btn text" id="btnOut" type="button" hidden>Sair</button>
-    <button class="btn text" id="btnCfg" type="button">Ajustes</button>
-    <button class="btn text" id="btnCopy" type="button">Copiar pauta do 1:1</button>
     <button class="btn primary" id="btnNew" type="button" aria-haspopup="true" aria-expanded="false">Novo</button>
     <div class="menu" id="menuNew" hidden></div>
   </div>
@@ -418,7 +425,7 @@ async function initSupabase() {
   let primeira = true;
   sb.auth.onAuthStateChange((ev, session) => {
     const u = session ? session.user : null, mudou = (u && u.id) !== (user && user.id);
-    user = u; $("btnOut").hidden = !user; $("btnCopy").hidden = $("btnNew").hidden = $("btnCfg").hidden = !user;
+    user = u; $("btnOut").hidden = !user; $("btnNew").hidden = !user;
     if (!user) { items = new Map(); loaded = true; notice = ""; render(); return; }
     if (mudou || primeira) loadRemote(); primeira = false;
   });
@@ -600,20 +607,38 @@ function openPop(anchor, kids) {
   setTimeout(() => { document.addEventListener("pointerdown", popOut, true); document.addEventListener("keydown", popKey); }, 0);
   const f = pop.querySelector("button"); if (f) f.focus();
 }
-function popOpcoes(cur, aplicar, extra) { /* Menu de data e prioridade. cur = {prazo, prioridade}; aplicar(campos) grava. */
-  const dataBtn = (icon, label, v) => h("button", { type: "button", "aria-pressed": String(!!v && cur.prazo === v), onclick: () => { aplicar({ prazo: v }); closePop(); } }, icon, label);
-  const escolher = h("button", { type: "button", "aria-pressed": "false" }, ICON.data(), "Escolher",
-    h("input", { type: "date", "aria-label": "Escolher data", value: cur.prazo || "", onchange: e => { if (e.target.value) { aplicar({ prazo: e.target.value }); closePop(); } } }));
+const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+function calendario(sel, onPick) { /* Mês navegável; clique no dia escolhe. sel = "AAAA-MM-DD" ou "". */
+  const base = sel ? new Date(sel + "T12:00:00") : new Date(); let ano = base.getFullYear(), mes = base.getMonth();
+  const box = h("div", { class: "cal" });
+  const paint = () => {
+    const primeiro = new Date(ano, mes, 1), dias = new Date(ano, mes + 1, 0).getDate(), ini = primeiro.getDay(), hoje = today();
+    const cel = []; for (let i = 0; i < ini; i++) cel.push(h("span"));
+    for (let d = 1; d <= dias; d++) { const iso = `${ano}-${String(mes + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      cel.push(h("button", { type: "button", class: (iso === hoje ? "hoje " : "") + (iso === sel ? "sel" : ""), "aria-pressed": String(iso === sel), "aria-label": fmtDate(iso), onclick: () => onPick(iso) }, d)); }
+    box.replaceChildren(h("div", { class: "cal-nav" },
+        h("button", { class: "mini", type: "button", "aria-label": "Mês anterior", onclick: () => { mes--; if (mes < 0) { mes = 11; ano--; } paint(); } }, "‹"),
+        h("span", null, MESES[mes] + " " + ano),
+        h("button", { class: "mini", type: "button", "aria-label": "Próximo mês", onclick: () => { mes++; if (mes > 11) { mes = 0; ano++; } paint(); } }, "›")),
+      h("div", { class: "cal-grid" }, ...["D", "S", "T", "Q", "Q", "S", "S"].map(x => h("span", { class: "wd" }, x)), ...cel)); };
+  paint(); return box;
+}
+function popOpcoes(cur, aplicar, extra) { /* Menu de data e prioridade. cur = {prazo, prioridade}; aplicar(campos) grava. Clicar de novo no que já está marcado desmarca. */
+  const atalhos = [today(), addDias(1), addDias(7)], avulsa = !!cur.prazo && !atalhos.includes(cur.prazo);
+  const dataBtn = (icon, label, v) => h("button", { type: "button", "aria-pressed": String(cur.prazo === v), onclick: () => { aplicar({ prazo: cur.prazo === v ? "" : v }); closePop(); } }, icon, label);
+  const calHost = h("div", { class: "cal-host" }); let aberto = false;
+  const escolher = h("button", { type: "button", "aria-pressed": String(avulsa), onclick: () => { aberto = !aberto; escolher.setAttribute("aria-pressed", String(aberto || avulsa));
+    calHost.replaceChildren(aberto ? calendario(cur.prazo || "", iso => { aplicar({ prazo: cur.prazo === iso ? "" : iso }); closePop(); }) : ""); } }, ICON.data(), avulsa ? fmtDate(cur.prazo).slice(0, 5) : "Escolher");
   return [h("div", { class: "lbl" }, "Data"),
-    h("div", { class: "pop-grid" }, dataBtn(ICON.sol(), "Hoje", today()), dataBtn(ICON.amanha(), "Amanhã", addDias(1)), dataBtn(ICON.sete(), "+7 dias", addDias(7)), escolher),
-    cur.prazo ? h("div", { class: "linha" }, h("button", { class: "btn small text", type: "button", onclick: () => { aplicar({ prazo: "" }); closePop(); } }, "Sem data (" + fmtDate(cur.prazo) + ")")) : null,
+    h("div", { class: "pop-grid" }, dataBtn(ICON.sol(), "Hoje", atalhos[0]), dataBtn(ICON.amanha(), "Amanhã", atalhos[1]), dataBtn(ICON.sete(), "+7 dias", atalhos[2]), escolher),
+    calHost,
     h("div", { class: "lbl" }, "Prioridade"),
-    h("div", { class: "pop-grid" }, ...PRIOS_TAREFA.map(([v, n]) => h("button", { type: "button", "aria-pressed": String((cur.prioridade || "") === v), onclick: () => { aplicar({ prioridade: v }); closePop(); } }, ICON.flag(v), n))),
+    h("div", { class: "pop-grid" }, ...PRIOS_TAREFA.map(([v, n]) => h("button", { type: "button", "aria-pressed": String((cur.prioridade || "") === v), onclick: () => { aplicar({ prioridade: (cur.prioridade || "") === v ? "" : v }); closePop(); } }, ICON.flag(v), n))),
     ...(extra || [])];
 }
 const dueChip = (t) => { if (!t.prazo) return null; const hoje = today(), cls = t.feito ? "" : t.prazo === hoje ? "hoje" : t.prazo < hoje ? "late" : "";
   return h("span", { class: "due " + cls }, t.prazo === hoje ? "Hoje" : t.prazo === addDias(1) ? "Amanhã" : fmtDate(t.prazo).slice(0, 5)); };
-const addState = {}; let foco = null;
+const addState = {}, arqAbertas = new Set(); let foco = null;
 function modoVisao() { return (items.get("config") || {}).visaoModo === "quadro" ? "quadro" : "lista"; }
 function setConfig(campos) { const c = items.get("config") || { id: "config", tipo: "config" }; return put({ ...c, ...campos }).catch(() => {}); }
 async function moverTarefas(ids, dest) { const lista = dest.dataset.lista;
@@ -622,12 +647,12 @@ function todoRow(t) {
   const txt = h("input", { class: "txt", type: "text", value: t.titulo || "", placeholder: "Sem título", "aria-label": "Texto da tarefa",
     onchange: e => patch(t.id, { titulo: e.target.value.trim() }), onkeydown: e => { if (e.key === "Enter") e.target.blur(); if (e.key === "Escape") { e.target.value = t.titulo || ""; e.target.blur(); } } });
   const abrir = e => openPop(e.currentTarget, popOpcoes(t, f => patch(t.id, f), [h("div", { class: "linha" },
+    h("button", { class: "btn small text", type: "button", onclick: () => { closePop(); patch(t.id, { arquivada: !t.arquivada }); } }, t.arquivada ? "Desarquivar" : "Arquivar"),
     h("button", { class: "btn small danger", type: "button", onclick: ev => { const b = ev.currentTarget; if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "Confirmar exclusão"; return; } closePop(); del(t.id).catch(() => {}); } }, "Excluir tarefa"))]));
-  return h("div", { class: "todo" + (t.prioridade ? " p-" + t.prioridade : "") + (t.feito ? " feita" : ""), "data-id": t.id },
+  return h("div", { class: "todo" + (t.prioridade ? " p-" + t.prioridade : "") + (t.feito ? " feita" : "") + (t.arquivada ? " arq" : ""), "data-id": t.id },
     grip(), h("input", { type: "checkbox", checked: !!t.feito, "aria-label": "Concluir", onchange: e => patch(t.id, { feito: e.target.checked }) }),
     txt, t.prioridade && ICON.flag(t.prioridade), dueChip(t),
-    h("button", { class: "mini", type: "button", "aria-label": "Data", title: "Data", onclick: abrir }, ICON.cal()),
-    h("button", { class: "mini", type: "button", "aria-label": "Mais opções", title: "Prioridade e mais", onclick: abrir }, ICON.chev()));
+    h("button", { class: "mini", type: "button", "aria-label": "Opções da tarefa", title: "Data, prioridade e mais", onclick: abrir }, ICON.chev()));
 }
 function addBox(lista) {
   const st = addState[lista.id] || (addState[lista.id] = { texto: "", prazo: "", prioridade: "" });
@@ -643,16 +668,21 @@ function addBox(lista) {
     h("button", { class: "mini", type: "button", "aria-label": "Mais opções", title: "Prioridade e mais", onclick: abrir }, ICON.chev()));
 }
 function coluna(l) {
-  const ts = list("tarefa").filter(t => t.lista === l.id).sort((a, b) => (a.feito ? 1 : 0) - (b.feito ? 1 : 0) || (a.ordem || 0) - (b.ordem || 0)), abertas = ts.filter(t => !t.feito).length;
+  const todas = list("tarefa").filter(t => t.lista === l.id), arq = todas.filter(t => t.arquivada);
+  const ts = todas.filter(t => !t.arquivada).sort((a, b) => (a.feito ? 1 : 0) - (b.feito ? 1 : 0) || (a.ordem || 0) - (b.ordem || 0)), abertas = ts.filter(t => !t.feito).length;
   const titulo = h("input", { class: "col-title", type: "text", value: l.titulo || "", placeholder: "Nome da lista", "aria-label": "Nome da lista", "data-foco": "lista-" + l.id,
     onchange: e => patch(l.id, { titulo: e.target.value.trim() }), onkeydown: e => { if (e.key === "Enter") e.target.blur(); } });
   const excluir = h("button", { class: "mini danger btn", type: "button", "aria-label": "Excluir lista", title: "Excluir lista", style: "width:auto;padding:0 6px;font-size:12px", onclick: async e => { const b = e.currentTarget;
-    if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "Excluir lista e " + ts.length + (ts.length === 1 ? " tarefa?" : " tarefas?"); return; }
-    for (const t of ts) await del(t.id).catch(() => {}); await del(l.id).catch(() => {}); } }, "×");
+    if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "Excluir lista e " + todas.length + (todas.length === 1 ? " tarefa?" : " tarefas?"); return; }
+    for (const t of todas) await del(t.id).catch(() => {}); await del(l.id).catch(() => {}); } }, "×");
+  const verArq = arqAbertas.has(l.id);
+  const rodape = arq.length ? h("div", { class: "arq-foot" },
+    h("button", { class: "btn small text", type: "button", "aria-expanded": String(verArq), onclick: () => { verArq ? arqAbertas.delete(l.id) : arqAbertas.add(l.id); render(); } }, (verArq ? "Ocultar " : "Mostrar ") + arq.length + (arq.length === 1 ? " arquivada" : " arquivadas")),
+    verArq ? h("div", { class: "todos arq-list" }, arq.map(todoRow)) : null) : null;
   return h("div", { class: "col", "data-id": l.id },
     h("div", { class: "col-head" }, grip(), titulo, abertas ? h("span", { class: "cnt num" }, abertas) : null, excluir),
     sortable(h("div", { class: "todos", "data-lista": l.id }, ts.map(todoRow)), moverTarefas, { group: "tarefas", zone: ".col" }),
-    addBox(l));
+    addBox(l), rodape);
 }
 async function novaLista() { const id = "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   foco = "[data-foco=\"lista-" + id + "\"]"; await put({ id, tipo: "lista", titulo: "", ordem: Date.now(), criadoEm: new Date().toISOString() }).catch(() => {}); }
@@ -662,7 +692,7 @@ function pautas() {
     h("button", { type: "button", "aria-pressed": String(modo === k), onclick: () => setConfig({ visaoModo: k }) }, n)));
   const btnNova = h("button", { class: "nova-lista", type: "button", onclick: novaLista }, "+ Nova lista");
   const cont = sortable(h("div", { class: modo === "quadro" ? "board" : "stack" }, ls.map(coluna), btnNova), reordenar, { horizontal: modo === "quadro" });
-  return h("div", null, h("div", { class: "pautas-top" }, h("h2", null, "Pautas"), seg),
+  return h("div", null, h("div", { class: "pautas-top" }, seg),
     ls.length ? cont : h("div", null, h("p", { class: "vazio" }, "Comece criando uma lista. Dentro dela você adiciona as tarefas."), cont));
 }
 
@@ -693,7 +723,7 @@ const VIEWS = {
       block("Pontos de atenção da " + G(), "O que ela apontou e o que você está fazendo a respeito. Marque quando estiver endereçado.", "atencao",
         panel("Em aberto", "c-sand", ab.length, ab.map(a => atRow(a, true)), "Nenhum ponto em aberto."),
         ok.length ? h("div", { style: "margin-top:12px" }, panel("Endereçados", "c-gray", ok.length, ok.map(a => atRow(a)), "")) : null),
-      block("Projetos para reportar no 1:1", "Andamento, próximo passo e o que você precisa dela. O botão Copiar pauta do 1:1, no topo, monta o texto pronto.", "projeto",
+      block("Projetos para reportar no 1:1", "Andamento, próximo passo e o que você precisa dela. Marque Levar no próximo 1:1 para destacar.", "projeto",
         panel("No próximo 1:1", "c-mint", levar.length, levar.map(p => projRow(p, true)), "Nenhum projeto marcado para o próximo 1:1."),
         resto.length ? h("div", { style: "margin-top:12px" }, panel("Fora desta pauta", "c-gray", resto.length, resto.map(p => projRow(p)), "")) : null));
   },
@@ -793,30 +823,13 @@ function openDrawer(tipo, item, preset) {
   const first = form.querySelector("input, textarea, select"); if (first) first.focus();
 }
 
-/* ---------- Topo: menu Novo e pauta do 1:1 ---------- */
+/* ---------- Topo: menu Novo ---------- */
 const menu = $("menuNew"), btnNew = $("btnNew");
-function montarMenu() { menu.replaceChildren(...Object.entries(TIPOS).filter(([, T]) => !T.oculto).map(([k, T]) => h("button", { type: "button", onclick: () => { toggleMenu(false); openDrawer(k); } }, tx(T.nome)))); }
-$("btnCfg").addEventListener("click", () => openDrawer("config", items.get("config")));
+function montarMenu() { menu.replaceChildren(...Object.entries(TIPOS).filter(([, T]) => !T.oculto).map(([k, T]) => h("button", { type: "button", onclick: () => { toggleMenu(false); openDrawer(k); } }, tx(T.nome))),
+  h("button", { type: "button", class: "sep", onclick: () => { toggleMenu(false); openDrawer("config", items.get("config")); } }, "Ajustes…")); }
 function toggleMenu(on) { menu.hidden = !on; btnNew.setAttribute("aria-expanded", String(on)); }
 btnNew.addEventListener("click", e => { e.stopPropagation(); toggleMenu(menu.hidden); });
 document.addEventListener("click", e => { if (!menu.contains(e.target)) toggleMenu(false); });
-function pautaTexto() {
-  const L = ["Pauta 1:1 · " + fmtDate(today()), ""], proj = list("projeto").filter(p => p.levar), at = list("atencao").filter(a => !a.resolvido), nome = id => (areaOf(id) || {}).nome;
-  L.push("PROJETOS"); if (!proj.length) L.push("(nenhum marcado)");
-  proj.forEach(p => { L.push("• " + (nome(p.area) ? "[" + nome(p.area) + "] " : "") + p.titulo + (p.saude ? " (" + lbl(SAUDE, p.saude) + ")" : ""));
-    if (p.andamento) L.push("  Andamento: " + p.andamento); if (p.proximo) L.push("  Próximo passo: " + p.proximo); if (p.pedido) L.push("  Preciso de você: " + p.pedido); });
-  L.push("", "PONTOS DE ATENÇÃO EM ABERTO"); if (!at.length) L.push("(nenhum)");
-  at.forEach(a => { L.push("• " + (nome(a.area) ? "[" + nome(a.area) + "] " : "") + a.titulo); if (a.resposta) L.push("  O que estou fazendo: " + a.resposta); });
-  return L.join("\n");
-}
-$("btnCopy").addEventListener("click", async () => { const txt = pautaTexto();
-  try { await navigator.clipboard.writeText(txt); toast("Pauta do 1:1 copiada."); }
-  catch (e) { const ta = h("textarea", { style: "width:100%;min-height:260px", "aria-label": "Pauta do 1:1" }); ta.value = txt;
-    const close = () => $("drawerHost").replaceChildren();
-    $("drawerHost").replaceChildren(h("button", { class: "drawer-bg", type: "button", "aria-label": "Fechar", onclick: close }),
-      h("div", { class: "drawer", role: "dialog", "aria-label": "Pauta do 1:1" }, h("div", { class: "drawer-head" }, h("h2", null, "Pauta do 1:1"), h("button", { class: "mini", type: "button", "aria-label": "Fechar", onclick: close }, "×")),
-        h("div", { class: "drawer-body field" }, h("span", { class: "help" }, "Selecione o texto e copie."), ta))); ta.select(); } });
-
 $("hoje").textContent = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 { const k = location.hash.slice(1); if (VIEWS[k]) tab = k; }
 render(); init();
